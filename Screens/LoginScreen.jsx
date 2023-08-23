@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 
 const initialState = {
@@ -40,59 +40,64 @@ const LoginScreen = () => {
         style={styles.backgroundImage}
         source={require("../assets/images/photobg.png")}
       >
-        <View style={styles.formContainer}>
-          <View style={styles.form}>
-            <Text style={styles.titleEnter}>Увійти</Text>
-            <TextInput
-              placeholder="Адреса електронної пошти"
-              value={inputValues.email}
-              onChangeText={(text) => handleInputChange("email", text)}
-              style={[
-                styles.inputEmail,
-                isFocused.email ? styles.inputFocused : null,
-                { color: isFocused.email ? "#212121" : "#212121" },
-              ]}
-              onFocus={() => handleFocus("email")}
-              onBlur={() => handleBlur("email")}
-            />
-            <View
-              style={[
-                styles.inputPasswordContainer,
-                isFocused.password ? styles.inputFocused : null,
-              ]}
-              onFocus={() => handleFocus("password")}
-              onBlur={() => handleBlur("password")}
-            >
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={50}
+        >
+          <View style={styles.formContainer}>
+            <View style={styles.form}>
+              <Text style={styles.titleEnter}>Увійти</Text>
               <TextInput
-                placeholder="Пароль"
-                value={inputValues.password}
-                onChangeText={(text) => handleInputChange("password", text)}
-                secureTextEntry={!isPasswordVisible}
+                placeholder="Адреса електронної пошти"
+                value={inputValues.email}
+                onChangeText={(text) => handleInputChange("email", text)}
                 style={[
-                  styles.inputPassword,
-                  isFocused.password ? styles.inputFocused : null,
-                  { color: isFocused.password ? "#212121" : "#212121" },
+                  styles.inputEmail,
+                  isFocused.email ? styles.inputFocused : null,
+                  { color: isFocused.email ? "#212121" : "#212121" },
                 ]}
+                onFocus={() => handleFocus("email")}
+                onBlur={() => handleBlur("email")}
               />
-              <TouchableOpacity
-                onPress={() => setPasswordVisible(!isPasswordVisible)}
+              <View
+                style={[
+                  styles.inputPasswordContainer,
+                  isFocused.password ? styles.inputFocused : null,
+                ]}
+                onFocus={() => handleFocus("password")}
+                onBlur={() => handleBlur("password")}
               >
-                <Text style={styles.buttonViewPassword}>
-                  {isPasswordVisible ? "Приховати" : "Показати"}
-                </Text>
+                <TextInput
+                  placeholder="Пароль"
+                  value={inputValues.password}
+                  onChangeText={(text) => handleInputChange("password", text)}
+                  secureTextEntry={!isPasswordVisible}
+                  style={[
+                    styles.inputPassword,
+                    isFocused.password ? styles.inputFocused : null,
+                    { color: isFocused.password ? "#212121" : "#212121" },
+                  ]}
+                />
+                <TouchableOpacity
+                  onPress={() => setPasswordVisible(!isPasswordVisible)}
+                >
+                  <Text style={styles.buttonViewPassword}>
+                    {isPasswordVisible ? "Приховати" : "Показати"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={styles.button} onPress={() => {}}>
+                <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
-            </View>
-            <TouchableOpacity style={styles.button} onPress={() => {}}>
-              <Text style={styles.buttonText}>Увійти</Text>
-            </TouchableOpacity>
-            <View style={styles.textInfoContainer}>
-              <Text style={styles.textInfo}>Немає акаунту?</Text>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.textInfoLink}>Зареєструватися</Text>
-              </TouchableOpacity>
+              <View style={styles.textInfoContainer}>
+                <Text style={styles.textInfo}>Немає акаунту?</Text>
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={styles.textInfoLink}>Зареєструватися</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </ImageBackground>
     </View>
   );
