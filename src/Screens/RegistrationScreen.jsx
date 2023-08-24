@@ -3,35 +3,48 @@ import {
   View,
   Text,
   TextInput,
+  Image,
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
   KeyboardAvoidingView,
 } from "react-native";
+import { AntDesign } from "@expo/vector-icons";
 
 const initialState = {
-  email: "",
-  password: "",
+  email: { value: "", isFocused: false },
+  password: { value: "", isFocused: false },
+  login: { value: "", isFocused: false },
 };
 
-const LoginScreen = () => {
-  const [inputValues, setInputValues] = useState(initialState);
+const RegistrationScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [isFocused, setIsFocused] = useState({ email: false, password: false });
+  const [photoAdded, setPhotoAdded] = useState(false);
+  const [inputValues, setInputValues] = useState(initialState);
 
   const handleInputChange = (inputName, text) => {
+    if (inputName === "password") {
+      text = text.toLowerCase();
+    }
+    
     setInputValues((prevValues) => ({
       ...prevValues,
-      [inputName]: text,
+      [inputName]: { ...prevValues[inputName], value: text },
     }));
   };
 
   const handleFocus = (inputName) => {
-    setIsFocused((prev) => ({ ...prev, [inputName]: true }));
+    setInputValues((prev) => ({
+      ...prev,
+      [inputName]: { ...prev[inputName], isFocused: true },
+    }));
   };
 
   const handleBlur = (inputName) => {
-    setIsFocused((prev) => ({ ...prev, [inputName]: false }));
+    setInputValues((prev) => ({
+      ...prev,
+      [inputName]: { ...prev[inputName], isFocused: false },
+    }));
   };
 
   return (
@@ -42,59 +55,108 @@ const LoginScreen = () => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS == "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={50}
+          keyboardVerticalOffset={-163}
         >
           <View style={styles.formContainer}>
+            {photoAdded ? (
+              <>
+                <Image
+                  source={require("../assets/images/avatar.png")}
+                  style={styles.avatar}
+                />
+                <TouchableOpacity onPress={() => setPhotoAdded(false)}>
+                  <AntDesign
+                    style={styles.icon}
+                    name="closecircleo"
+                    size={25}
+                    color="#BDBDBD"
+                  />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <View
+                  style={[
+                    styles.avatar,
+                    {
+                      width: 120,
+                      height: 120,
+                      backgroundColor: "#F6F6F6",
+                    },
+                  ]}
+                ></View>
+                <TouchableOpacity onPress={() => setPhotoAdded(true)}>
+                  <AntDesign
+                    style={styles.icon}
+                    name="pluscircleo"
+                    size={25}
+                    color="#FF6C00"
+                  />
+                </TouchableOpacity>
+              </>
+            )}
+
             <View style={styles.form}>
-              <Text style={styles.titleEnter}>Увійти</Text>
+              <Text style={styles.titleEnter}>Реєстрація</Text>
+              <TextInput
+                placeholder="Логін"
+                style={[
+                  styles.inputLogin,
+                  inputValues.login.isFocused && styles.inputFocused,
+                ]}
+                value={inputValues.login.value}
+                onChangeText={(text) => handleInputChange("login", text)}
+                onFocus={() => handleFocus("login")}
+                onBlur={() => handleBlur("login")}
+              />
               <TextInput
                 placeholder="Адреса електронної пошти"
-                value={inputValues.email}
-                onChangeText={(text) => handleInputChange("email", text)}
                 style={[
                   styles.inputEmail,
-                  isFocused.email ? styles.inputFocused : null,
-                  { color: isFocused.email ? "#212121" : "#212121" },
+                  inputValues.email.isFocused && styles.inputFocused,
                 ]}
+                value={inputValues.email.value}
+                onChangeText={(text) => handleInputChange("email", text)}
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
               <View
                 style={[
                   styles.inputPasswordContainer,
-                  isFocused.password ? styles.inputFocused : null,
+                  inputValues.password.isFocused && styles.inputFocused,
                 ]}
                 onFocus={() => handleFocus("password")}
                 onBlur={() => handleBlur("password")}
               >
                 <TextInput
                   placeholder="Пароль"
-                  value={inputValues.password}
+                  value={inputValues.password.value}
                   onChangeText={(text) => handleInputChange("password", text)}
                   secureTextEntry={!isPasswordVisible}
                   style={[
                     styles.inputPassword,
-                    isFocused.password ? styles.inputFocused : null,
-                    { color: isFocused.password ? "#212121" : "#212121" },
+                    inputValues.password.isFocused && styles.inputFocused,
                   ]}
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!isPasswordVisible)}
                 >
-                  <Text style={styles.buttonViewPassword}>
+                  <Text
+                    style={[
+                      styles.buttonViewPassword,
+                      inputValues.password.isFocused && styles.inputFocused,
+                    ]}
+                  >
                     {isPasswordVisible ? "Приховати" : "Показати"}
                   </Text>
                 </TouchableOpacity>
               </View>
               <TouchableOpacity style={styles.button} onPress={() => {}}>
-                <Text style={styles.buttonText}>Увійти</Text>
+                <Text style={styles.buttonText}>Зареєструватися</Text>
               </TouchableOpacity>
-              <View style={styles.textInfoContainer}>
-                <Text style={styles.textInfo}>Немає акаунту?</Text>
-                <TouchableOpacity onPress={() => {}}>
-                  <Text style={styles.textInfoLink}>Зареєструватися</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity onPress={() => {}}>
+                <Text style={styles.textInfoLink}>Вже є акаунт? Увійти</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -113,17 +175,30 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   formContainer: {
-    paddingTop: 32,
-    paddingBottom: 111,
+    paddingBottom: 45,
     backgroundColor: "#FFF",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    justifyContent: "flex-end",
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    position: "absolute",
+    top: -60,
+    left: "50%",
+    marginLeft: -60,
+    borderRadius: 20,
+  },
+  icon: {
+    right: "30%",
+    position: "absolute",
+    top: 16,
   },
   form: {
-    justifyContent: "center",
     alignItems: "center",
-    borderRadius: "25 25 0 0",
-    height: "489",
+    height: "549",
+    justifyContent: "flex-end",
   },
   titleEnter: {
     color: "#212121",
@@ -134,16 +209,37 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.3,
     marginBottom: 33,
+    marginTop: 92,
   },
-  inputEmail: {
-    width: 343,
+  inputLogin: {
+    marginLeft: "2%",
+    marginRight: "2%",
+    width: "85%",
     height: 50,
-    flexShrink: 0,
     paddingLeft: 16,
     paddingTop: 16,
     paddingBottom: 15,
     backgroundColor: "#F6F6F6",
-    color: "#BDBDBD",
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    borderRadius: 5,
+    marginBottom: 16,
+  },
+  inputEmail: {
+    marginLeft: "2%",
+    marginRight: "2%",
+    width: "85%",
+    height: 50,
+    paddingLeft: 16,
+    paddingTop: 16,
+    paddingBottom: 15,
+    backgroundColor: "#F6F6F6",
+    color: "#212121",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
@@ -155,32 +251,31 @@ const styles = StyleSheet.create({
   },
   inputFocused: {
     borderColor: "#FF6C00",
-    color: "#212121",
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
+    backgroundColor: "#FFF",
   },
   inputPasswordContainer: {
+    width: "85%",
+    marginLeft: "2%",
+    marginRight: "2%",
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 5,
-    width: 343,
+    marginLeft: "2%",
+    marginRight: "2%",
     height: 50,
     marginBottom: 43,
     backgroundColor: "#F6F6F6",
   },
   inputPassword: {
-    width: 343,
     height: 50,
-    flexShrink: 0,
+    maxWidth: "85%",
     paddingLeft: 16,
     paddingTop: 16,
     paddingBottom: 15,
     backgroundColor: "#F6F6F6",
-    color: "#BDBDBD",
+    color: "#212121",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
@@ -190,7 +285,6 @@ const styles = StyleSheet.create({
     borderColor: "#E8E8E8",
     borderRightWidth: 0,
     borderRadius: 5,
-    zIndex: 1,
   },
   buttonViewPassword: {
     paddingHorizontal: 10,
@@ -203,7 +297,9 @@ const styles = StyleSheet.create({
   },
   button: {
     display: "flex",
-    width: 343,
+    marginLeft: "2%",
+    marginRight: "2%",
+    width: "85%",
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 32,
@@ -223,14 +319,8 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
   },
-  textInfoContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 5,
-  },
   textInfo: {
     color: "#1B4371",
-    textAlign: "center",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
@@ -238,7 +328,6 @@ const styles = StyleSheet.create({
   },
   textInfoLink: {
     color: "#1B4371",
-    textAlign: "center",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
@@ -248,4 +337,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default RegistrationScreen;
