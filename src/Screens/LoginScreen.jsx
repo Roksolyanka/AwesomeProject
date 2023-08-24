@@ -19,6 +19,10 @@ const LoginScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
   const handleInputChange = (inputName, text) => {
+    if (inputName === "password") {
+      text = text.toLowerCase();
+    }
+
     setInputValues((prevValues) => ({
       ...prevValues,
       [inputName]: { ...prevValues[inputName], value: text },
@@ -97,11 +101,11 @@ const LoginScreen = () => {
               <TouchableOpacity style={styles.button} onPress={() => {}}>
                 <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}}>
-                  <Text style={styles.textInfoLink}>
-                    Немає акаунту? Зареєструватися
-                  </Text>
-                </TouchableOpacity>
+              <TouchableOpacity onPress={() => {}}>
+                <Text style={styles.textInfoLink}>
+                  Немає акаунту? Зареєструватися
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </KeyboardAvoidingView>
