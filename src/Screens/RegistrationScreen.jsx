@@ -58,32 +58,34 @@ const RegistrationScreen = () => {
           keyboardVerticalOffset={-163}
         >
           <View style={styles.formContainer}>
-            {photoAdded ? (
-              <>
-                <Image
-                  source={require("../assets/images/avatar.png")}
-                  style={styles.avatar}
-                />
-                <TouchableOpacity onPress={() => setPhotoAdded(false)}>
-                  <AntDesign
-                    style={styles.iconWithPhoto}
-                    name="closecircleo"
-                    size={25}
+            <View style={styles.avatarContainer}>
+              {photoAdded ? (
+                <>
+                  <Image
+                    source={require("../assets/images/avatar.png")}
+                    style={styles.avatar}
                   />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <View style={[styles.withoutAvatar]}></View>
-                <TouchableOpacity onPress={() => setPhotoAdded(true)}>
-                  <AntDesign
-                    style={styles.iconWithoutPhoto}
-                    name="pluscircleo"
-                    size={25}
-                  />
-                </TouchableOpacity>
-              </>
-            )}
+                  <TouchableOpacity onPress={() => setPhotoAdded(false)}>
+                    <AntDesign
+                      style={styles.iconWithPhoto}
+                      name="closecircleo"
+                      size={25}
+                    />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={[styles.withoutAvatar]}></View>
+                  <TouchableOpacity onPress={() => setPhotoAdded(true)}>
+                    <AntDesign
+                      style={styles.iconWithoutPhoto}
+                      name="pluscircleo"
+                      size={25}
+                    />
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
 
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Реєстрація</Text>
@@ -171,34 +173,33 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     justifyContent: "flex-end",
   },
+  avatarContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatar: {
     width: 120,
     height: 120,
     position: "absolute",
     top: -60,
-    left: "50%",
-    marginLeft: -50,
     borderRadius: 20,
+    alignItems: "center",
   },
   withoutAvatar: {
     width: 120,
     height: 120,
     position: "absolute",
     top: -60,
-    left: "50%",
-    marginLeft: -50,
     borderRadius: 20,
     backgroundColor: "#F6F6F6",
   },
   iconWithPhoto: {
-    right: "30%",
-    position: "absolute",
+    right: "-18%",
     top: 16,
     color: "#BDBDBD",
   },
   iconWithoutPhoto: {
-    right: "30%",
-    position: "absolute",
+    right: "-18%",
     top: 16,
     color: "#FF6C00",
   },
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.3,
     marginBottom: 33,
-    marginTop: 92,
+    marginTop: 40,
   },
   inputLogin: {
     width: "100%",
