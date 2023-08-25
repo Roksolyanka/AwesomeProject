@@ -26,7 +26,7 @@ const RegistrationScreen = () => {
     if (inputName === "password") {
       text = text.toLowerCase();
     }
-    
+
     setInputValues((prevValues) => ({
       ...prevValues,
       [inputName]: { ...prevValues[inputName], value: text },
@@ -66,31 +66,20 @@ const RegistrationScreen = () => {
                 />
                 <TouchableOpacity onPress={() => setPhotoAdded(false)}>
                   <AntDesign
-                    style={styles.icon}
+                    style={styles.iconWithPhoto}
                     name="closecircleo"
                     size={25}
-                    color="#BDBDBD"
                   />
                 </TouchableOpacity>
               </>
             ) : (
               <>
-                <View
-                  style={[
-                    styles.avatar,
-                    {
-                      width: 120,
-                      height: 120,
-                      backgroundColor: "#F6F6F6",
-                    },
-                  ]}
-                ></View>
+                <View style={[styles.withoutAvatar]}></View>
                 <TouchableOpacity onPress={() => setPhotoAdded(true)}>
                   <AntDesign
-                    style={styles.icon}
+                    style={styles.iconWithoutPhoto}
                     name="pluscircleo"
                     size={25}
-                    color="#FF6C00"
                   />
                 </TouchableOpacity>
               </>
@@ -175,6 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   formContainer: {
+    paddingHorizontal: 16,
     paddingBottom: 45,
     backgroundColor: "#FFF",
     borderTopLeftRadius: 25,
@@ -187,17 +177,33 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -60,
     left: "50%",
-    marginLeft: -60,
+    marginLeft: -50,
     borderRadius: 20,
   },
-  icon: {
+  withoutAvatar: {
+    width: 120,
+    height: 120,
+    position: "absolute",
+    top: -60,
+    left: "50%",
+    marginLeft: -50,
+    borderRadius: 20,
+    backgroundColor: "#F6F6F6",
+  },
+  iconWithPhoto: {
     right: "30%",
     position: "absolute",
     top: 16,
+    color: "#BDBDBD",
+  },
+  iconWithoutPhoto: {
+    right: "30%",
+    position: "absolute",
+    top: 16,
+    color: "#FF6C00",
   },
   form: {
     alignItems: "center",
-    height: "549",
     justifyContent: "flex-end",
   },
   titleEnter: {
@@ -212,11 +218,9 @@ const styles = StyleSheet.create({
     marginTop: 92,
   },
   inputLogin: {
-    marginLeft: "2%",
-    marginRight: "2%",
-    width: "85%",
+    width: "100%",
     height: 50,
-    paddingLeft: 16,
+    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 15,
     backgroundColor: "#F6F6F6",
@@ -231,11 +235,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputEmail: {
-    marginLeft: "2%",
-    marginRight: "2%",
-    width: "85%",
+    width: "100%",
     height: 50,
-    paddingLeft: 16,
+    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 15,
     backgroundColor: "#F6F6F6",
@@ -254,24 +256,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   inputPasswordContainer: {
-    width: "85%",
-    marginLeft: "2%",
-    marginRight: "2%",
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 5,
-    marginLeft: "2%",
-    marginRight: "2%",
     height: 50,
     marginBottom: 43,
     backgroundColor: "#F6F6F6",
   },
   inputPassword: {
     height: 50,
-    maxWidth: "85%",
-    paddingLeft: 16,
+    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 15,
     backgroundColor: "#F6F6F6",
@@ -297,13 +294,9 @@ const styles = StyleSheet.create({
   },
   button: {
     display: "flex",
-    marginLeft: "2%",
-    marginRight: "2%",
-    width: "85%",
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingLeft: 32,
-    paddingRight: 32,
+    width: "100%",
+    paddingVertical: 16,
+    paddingHorizontal: 32,
     flexDirection: "column",
     alignItems: "center",
     gap: 12,
@@ -314,13 +307,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFF",
     textAlign: "center",
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-  },
-  textInfo: {
-    color: "#1B4371",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
