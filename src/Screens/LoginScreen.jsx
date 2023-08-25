@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from "react-native";
 
 const initialState = {
@@ -19,7 +20,8 @@ const initialState = {
 const LoginScreen = () => {
   const [inputValues, setInputValues] = useState(initialState);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-
+  const [errorMessages, setErrorMessages] = useState({});
+  
   const handleInputChange = (inputName, text) => {
     if (inputName === "password") {
       text = text.toLowerCase();
@@ -45,6 +47,40 @@ const LoginScreen = () => {
     }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+
+    if (!inputValues.email.value) {
+      errors.email = "Електронна пошта обов'язкова";
+    } else if (!isValidEmail(inputValues.email.value)) {
+      errors.email = "Введіть дійсну електронну пошту";
+    }
+
+    if (!inputValues.password.value) {
+      errors.password = "Пароль обов'язковий";
+    }
+
+    setErrorMessages(errors);
+
+    return Object.keys(errors).length === 0;
+  };
+
+  const isValidEmail = (email) => {
+    const emailStandart = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailStandart.test(email);
+  };
+
+  const handleLogin = () => {
+    if (validateForm()) {
+      const loginData = {
+        email: inputValues.email.value,
+        password: inputValues.password.value,
+      };
+      console.log("Дані для входу:", loginData);
+      Alert.alert("Вхід успішний! Облікові дані:", `${inputValues.email.value} + ${inputValues.password.value}`);
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -59,9 +95,14 @@ const LoginScreen = () => {
           <View style={styles.formContainer}>
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Увійти</Text>
+              {errorMessages.email && (
+                <Text style={styles.errorMessage}>{errorMessages.email}</Text>
+              )}
               <TextInput
                 placeholder="Адреса електронної пошти"
                 value={inputValues.email.value}
+                autoComplete="email"
+                keyboardType="email-address"
                 onChangeText={(text) => handleInputChange("email", text)}
                 style={[
                   styles.inputEmail,
@@ -70,6 +111,11 @@ const LoginScreen = () => {
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
+              {errorMessages.password && (
+                <Text style={styles.errorMessage}>
+                  {errorMessages.password}
+                </Text>
+              )}
               <View
                 style={[
                   styles.inputPasswordContainer,
@@ -81,6 +127,7 @@ const LoginScreen = () => {
                 <TextInput
                   placeholder="Пароль"
                   value={inputValues.password.value}
+                  autoComplete="password"
                   onChangeText={(text) => handleInputChange("password", text)}
                   secureTextEntry={!isPasswordVisible}
                   style={[
@@ -101,7 +148,11 @@ const LoginScreen = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.button} onPress={() => {}}>
+              <TouchableOpacity
+                title="Login"
+                style={styles.button}
+                onPress={handleLogin}
+              >
                 <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {}}>
@@ -235,6 +286,13 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     textDecorationLine: "underline",
     textDecorationColor: "#1B4371",
+  },
+  errorMessage: {
+    color: "#FF6C00",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
   },
 });
 

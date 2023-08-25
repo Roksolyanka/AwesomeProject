@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -23,6 +24,11 @@ const RegistrationScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [photoAdded, setPhotoAdded] = useState(false);
   const [inputValues, setInputValues] = useState(initialState);
+  const [errorMessages, setErrorMessages] = useState({});
+
+  const handlePhotoAdd = () => {
+    setPhotoAdded(!photoAdded);
+  };
 
   const handleInputChange = (inputName, text) => {
     if (inputName === "password") {
@@ -49,6 +55,49 @@ const RegistrationScreen = () => {
     }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+
+    if (!inputValues.login.value) {
+      errors.login = "Логін обов'язковий";
+    }
+
+    if (!inputValues.email.value) {
+      errors.email = "Електронна пошта обов'язкова";
+    } else if (!isValidEmail(inputValues.email.value)) {
+      errors.email = "Введіть дійсну електронну пошту";
+    }
+
+    if (!inputValues.password.value) {
+      errors.password = "Пароль обов'язковий";
+    }
+
+    setErrorMessages(errors);
+
+    return Object.keys(errors).length === 0;
+  };
+
+  const isValidEmail = (email) => {
+    const emailStandart = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailStandart.test(email);
+  };
+
+  const handleRegistration = () => {
+    if (validateForm()) {
+      const registrationData = {
+        login: inputValues.login.value,
+        email: inputValues.email.value,
+        password: inputValues.password.value,
+        photoAdded: photoAdded,
+      };
+      console.log("Реєстраційні дані:", registrationData);
+      Alert.alert(
+        "Реєстрація успішна! Облікові дані:",
+        `${inputValues.login.value} + ${inputValues.email.value} + ${inputValues.password.value}`
+      );
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -68,7 +117,7 @@ const RegistrationScreen = () => {
                     source={require("../assets/images/avatar.png")}
                     style={styles.avatar}
                   />
-                  <TouchableOpacity onPress={() => setPhotoAdded(false)}>
+                  <TouchableOpacity onPress={handlePhotoAdd}>
                     <AntDesign
                       style={styles.iconWithPhoto}
                       name="closecircleo"
@@ -79,7 +128,7 @@ const RegistrationScreen = () => {
               ) : (
                 <>
                   <View style={[styles.withoutAvatar]}></View>
-                  <TouchableOpacity onPress={() => setPhotoAdded(true)}>
+                  <TouchableOpacity onPress={handlePhotoAdd}>
                     <AntDesign
                       style={styles.iconWithoutPhoto}
                       name="pluscircleo"
@@ -92,28 +141,42 @@ const RegistrationScreen = () => {
 
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Реєстрація</Text>
+              {errorMessages.login && (
+                <Text style={styles.errorMessage}>{errorMessages.login}</Text>
+              )}
               <TextInput
                 placeholder="Логін"
+                value={inputValues.login.value}
+                autoComplete="username"
                 style={[
                   styles.inputLogin,
                   inputValues.login.isFocused && styles.inputFocused,
                 ]}
-                value={inputValues.login.value}
                 onChangeText={(text) => handleInputChange("login", text)}
                 onFocus={() => handleFocus("login")}
                 onBlur={() => handleBlur("login")}
               />
+              {errorMessages.email && (
+                <Text style={styles.errorMessage}>{errorMessages.email}</Text>
+              )}
               <TextInput
                 placeholder="Адреса електронної пошти"
+                value={inputValues.email.value}
+                autoComplete="email"
+                keyboardType="email-address"
                 style={[
                   styles.inputEmail,
                   inputValues.email.isFocused && styles.inputFocused,
                 ]}
-                value={inputValues.email.value}
                 onChangeText={(text) => handleInputChange("email", text)}
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
+              {errorMessages.password && (
+                <Text style={styles.errorMessage}>
+                  {errorMessages.password}
+                </Text>
+              )}
               <View
                 style={[
                   styles.inputPasswordContainer,
@@ -125,12 +188,13 @@ const RegistrationScreen = () => {
                 <TextInput
                   placeholder="Пароль"
                   value={inputValues.password.value}
-                  onChangeText={(text) => handleInputChange("password", text)}
+                  autoComplete="password"
                   secureTextEntry={!isPasswordVisible}
                   style={[
                     styles.inputPassword,
                     inputValues.password.isFocused && styles.inputFocused,
                   ]}
+                  onChangeText={(text) => handleInputChange("password", text)}
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!isPasswordVisible)}
@@ -145,7 +209,10 @@ const RegistrationScreen = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.button} onPress={() => {}}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleRegistration}
+              >
                 <Text style={styles.buttonText}>Зареєструватися</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {}}>
@@ -324,6 +391,13 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     textDecorationLine: "underline",
     textDecorationColor: "#1B4371",
+  },
+  errorMessage: {
+    color: "#FF6C00",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
   },
 });
 
