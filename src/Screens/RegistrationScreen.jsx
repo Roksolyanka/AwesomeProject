@@ -8,6 +8,8 @@ import {
   StyleSheet,
   ImageBackground,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -48,14 +50,15 @@ const RegistrationScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        style={styles.backgroundImage}
-        source={require("../assets/images/photobg.png")}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS == "ios" ? "padding" : "height"}
+        style={styles.container}
+        keyboardVerticalOffset={-145}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={-163}
+        <ImageBackground
+          style={styles.backgroundImage}
+          source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
             <View style={styles.avatarContainer}>
@@ -150,9 +153,9 @@ const RegistrationScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </ImageBackground>
-    </View>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 

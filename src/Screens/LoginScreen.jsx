@@ -7,6 +7,8 @@ import {
   StyleSheet,
   ImageBackground,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 
 const initialState = {
@@ -44,14 +46,15 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        style={styles.backgroundImage}
-        source={require("../assets/images/photobg.png")}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS == "ios" ? "padding" : "height"}
+        style={styles.container}
+        keyboardVerticalOffset={-220}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={50}
+        <ImageBackground
+          style={styles.backgroundImage}
+          source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
             <View style={styles.form}>
@@ -108,9 +111,9 @@ const LoginScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </ImageBackground>
-    </View>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
