@@ -21,7 +21,7 @@ const LoginScreen = () => {
   const [inputValues, setInputValues] = useState(initialState);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState({});
-  
+
   const handleInputChange = (inputName, text) => {
     if (inputName === "password") {
       text = text.toLowerCase();
@@ -70,6 +70,10 @@ const LoginScreen = () => {
     return emailStandart.test(email);
   };
 
+  const clearLoginForm = () => {
+    setInputValues(initialState);
+  };
+
   const handleLogin = () => {
     if (validateForm()) {
       const loginData = {
@@ -77,7 +81,10 @@ const LoginScreen = () => {
         password: inputValues.password.value,
       };
       console.log("Дані для входу:", loginData);
-      Alert.alert("Вхід успішний! Облікові дані:", `${inputValues.email.value} + ${inputValues.password.value}`);
+      Alert.alert(
+        "Вхід успішний! Облікові дані:",
+        `${inputValues.email.value} + ${inputValues.password.value}`
+      );
     }
   };
 
@@ -151,7 +158,10 @@ const LoginScreen = () => {
               <TouchableOpacity
                 title="Login"
                 style={styles.button}
-                onPress={handleLogin}
+                onPress={() => {
+                  handleLogin();
+                  clearLoginForm();
+                }}
               >
                 <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>

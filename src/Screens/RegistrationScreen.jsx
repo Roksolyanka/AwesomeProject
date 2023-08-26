@@ -82,6 +82,11 @@ const RegistrationScreen = () => {
     return emailStandart.test(email);
   };
 
+  const clearRegistrationForm = () => {
+    setInputValues(initialState);
+    setPhotoAdded(false);
+  };
+
   const handleRegistration = () => {
     if (validateForm()) {
       const registrationData = {
@@ -211,7 +216,10 @@ const RegistrationScreen = () => {
               </View>
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleRegistration}
+                onPress={() => {
+                  handleRegistration();
+                  clearRegistrationForm();
+                }}
               >
                 <Text style={styles.buttonText}>Зареєструватися</Text>
               </TouchableOpacity>
