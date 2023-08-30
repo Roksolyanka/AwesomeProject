@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   View,
@@ -21,6 +22,8 @@ const LoginScreen = () => {
   const [inputValues, setInputValues] = useState(initialState);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState({});
+
+  const navigation = useNavigation();
 
   const handleInputChange = (inputName, text) => {
     if (inputName === "password") {
@@ -165,7 +168,11 @@ const LoginScreen = () => {
               >
                 <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("Registration");
+                }}
+              >
                 <Text style={styles.textInfoLink}>
                   Немає акаунту? Зареєструватися
                 </Text>

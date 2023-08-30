@@ -13,6 +13,7 @@ import {
   Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const initialState = {
   email: { value: "", isFocused: false },
@@ -25,6 +26,8 @@ const RegistrationScreen = () => {
   const [photoAdded, setPhotoAdded] = useState(false);
   const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
+
+  const navigation = useNavigation();
 
   const handlePhotoAdd = () => {
     setPhotoAdded(!photoAdded);
@@ -223,7 +226,11 @@ const RegistrationScreen = () => {
               >
                 <Text style={styles.buttonText}>Зареєструватися</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("Login");
+                }}
+              >
                 <Text style={styles.textInfoLink}>Вже є акаунт? Увійти</Text>
               </TouchableOpacity>
             </View>
