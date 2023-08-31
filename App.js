@@ -8,11 +8,8 @@ import RegistrationScreen from "./src/Screens/RegistrationScreen";
 import { StatusBar } from "expo-status-bar";
 import Home from "./src/Screens/Home";
 import CommentsScreen from "./src/Screens/CommentsScreen";
-import CreatePostsScreen from "./src/Screens/CreatePostsScreen";
-import ProfileScreen from "./src/Screens/ProfileScreen";
 import MapScreen from "./src/Screens/MapScreen";
-import PostsScreen from "./src/Screens/PostsScreen";
-import { Button, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
 const Stack = createStackNavigator();
@@ -31,7 +28,7 @@ export default function App() {
     <>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen
+          {/* <Stack.Screen
             name="Login"
             component={LoginScreen}
             options={{ headerShown: false }}
@@ -40,22 +37,17 @@ export default function App() {
             name="Registration"
             component={RegistrationScreen}
             options={{ headerShown: false }}
-          />
+          /> */}
           <Stack.Screen
             name="Home"
             component={Home}
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="Posts"
-            component={PostsScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="CreatePosts"
-            component={CreatePostsScreen}
+            name="Comments"
+            component={CommentsScreen}
             options={{
-              title: "Створити публікацію",
+              title: "Коментарі",
               headerStyle: {
                 backgroundColor: "#FFF",
                 borderBottomWidth: 1,
@@ -83,16 +75,6 @@ export default function App() {
             }}
           />
           <Stack.Screen
-            name="Comments"
-            component={CommentsScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
             name="Map"
             component={MapScreen}
             options={{ headerShown: false }}
@@ -108,5 +90,18 @@ const styles = StyleSheet.create({
   iconGoBack: {
     color: "#212121CC",
     paddingLeft: 16,
+  },
+  iconLogOut: {
+    color: "#BDBDBD",
+    paddingRight: 10,
+  },
+  iconContainer: {
+    width: 70,
+    height: 40,
+    backgroundColor: "#FF6C00",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    alignSelf: "center",
   },
 });

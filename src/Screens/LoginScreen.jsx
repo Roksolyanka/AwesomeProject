@@ -86,7 +86,16 @@ const LoginScreen = () => {
       console.log("Дані для входу:", loginData);
       Alert.alert(
         "Вхід успішний! Облікові дані:",
-        `${inputValues.email.value} + ${inputValues.password.value}`
+        `${inputValues.email.value} + ${inputValues.password.value}`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              clearLoginForm();
+              navigation.navigate("Home");
+            },
+          },
+        ]
       );
     }
   };

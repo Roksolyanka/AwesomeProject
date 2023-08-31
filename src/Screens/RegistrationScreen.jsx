@@ -101,7 +101,16 @@ const RegistrationScreen = () => {
       console.log("Реєстраційні дані:", registrationData);
       Alert.alert(
         "Реєстрація успішна! Облікові дані:",
-        `${inputValues.login.value} + ${inputValues.email.value} + ${inputValues.password.value}`
+        `${inputValues.login.value} + ${inputValues.email.value} + ${inputValues.password.value}`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              clearRegistrationForm();
+              navigation.navigate("Home"); 
+            },
+          },
+        ]
       );
     }
   };

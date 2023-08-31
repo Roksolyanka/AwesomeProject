@@ -84,90 +84,99 @@ const CreatePostsScreen = () => {
         style={styles.container}
         keyboardVerticalOffset={-145}
       >
-        {errorMessages.photo && (
-          <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
-        )}
-        <View style={styles.photoContainer}>
-          {photoAdded ? (
-            <>
-              <Image
-                source={require("../assets/images/mountains.png")}
-                style={styles.photo}
-              />
-              <View style={styles.transparentCircle}>
-                <TouchableOpacity onPress={handlePhotoAdd}>
-                  <FontAwesome
-                    name="camera"
-                    size={24}
-                    style={styles.iconWithPhoto}
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.uploadText}>Редагувати фото</Text>
-            </>
-          ) : (
-            <>
-              <View style={[styles.withoutPhoto]}>
-                <View style={styles.whiteCircle}>
+        <View>
+          {errorMessages.photo && (
+            <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
+          )}
+          <View style={styles.photoContainer}>
+            {photoAdded ? (
+              <>
+                <Image
+                  source={require("../assets/images/mountains.png")}
+                  style={styles.photo}
+                />
+                <View style={styles.transparentCircle}>
                   <TouchableOpacity onPress={handlePhotoAdd}>
                     <FontAwesome
                       name="camera"
                       size={24}
-                      style={styles.iconWithoutPhoto}
+                      style={styles.iconWithPhoto}
                     />
                   </TouchableOpacity>
                 </View>
-              </View>
-              <Text style={styles.uploadText}>Завантажте фото</Text>
-            </>
+                <Text style={styles.uploadText}>Редагувати фото</Text>
+              </>
+            ) : (
+              <>
+                <View style={[styles.withoutPhoto]}>
+                  <View style={styles.whiteCircle}>
+                    <TouchableOpacity onPress={handlePhotoAdd}>
+                      <FontAwesome
+                        name="camera"
+                        size={24}
+                        style={styles.iconWithoutPhoto}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={styles.uploadText}>Завантажте фото</Text>
+              </>
+            )}
+          </View>
+          {errorMessages.name && (
+            <Text style={styles.errorMessage}>{errorMessages.name}</Text>
           )}
-        </View>
-        {errorMessages.name && (
-          <Text style={styles.errorMessage}>{errorMessages.name}</Text>
-        )}
-        <TextInput
-          placeholder="Назва..."
-          value={inputValues.name}
-          style={styles.input}
-          placeholderTextColor="#BDBDBD"
-          onChangeText={(text) => {
-            setInputValues((prevState) => ({ ...prevState, name: text }));
-            updateButtonActivation();
-          }}
-        />
-        {errorMessages.location && (
-          <Text style={styles.errorMessage}>{errorMessages.location}</Text>
-        )}
-        <View style={styles.locationContainer}>
-          <AntDesign name="enviromento" size={24} style={styles.iconLocation} />
           <TextInput
-            placeholder="Місцевість..."
-            value={inputValues.location}
-            style={styles.locationInput}
+            placeholder="Назва..."
+            value={inputValues.name}
+            style={styles.input}
             placeholderTextColor="#BDBDBD"
             onChangeText={(text) => {
-              setInputValues((prevState) => ({ ...prevState, location: text }));
+              setInputValues((prevState) => ({ ...prevState, name: text }));
               updateButtonActivation();
             }}
           />
-        </View>
-        <TouchableOpacity
-          style={[styles.button, !isButtonActive && styles.inactiveButton]}
-          onPress={() => {
-            handleCreatePublication();
-            clearPublicationForm();
-          }}
-          disabled={!isButtonActive}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              !isButtonActive && styles.inactiveButtonText,
-            ]}
+          {errorMessages.location && (
+            <Text style={styles.errorMessage}>{errorMessages.location}</Text>
+          )}
+          <View style={styles.locationContainer}>
+            <AntDesign
+              name="enviromento"
+              size={24}
+              style={styles.iconLocation}
+            />
+            <TextInput
+              placeholder="Місцевість..."
+              value={inputValues.location}
+              style={styles.locationInput}
+              placeholderTextColor="#BDBDBD"
+              onChangeText={(text) => {
+                setInputValues((prevState) => ({
+                  ...prevState,
+                  location: text,
+                }));
+                updateButtonActivation();
+              }}
+            />
+          </View>
+          <TouchableOpacity
+            style={[styles.button, !isButtonActive && styles.inactiveButton]}
+            onPress={() => {
+              handleCreatePublication();
+              clearPublicationForm();
+            }}
+            disabled={!isButtonActive}
           >
-            Опублікувати
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.buttonText,
+                !isButtonActive && styles.inactiveButtonText,
+              ]}
+            >
+              Опублікувати
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.iconContainer}>
           <TouchableOpacity>
             <Feather name="trash-2" size={24} style={styles.deleteIcon} />
@@ -184,12 +193,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     paddingHorizontal: 16,
     paddingVertical: 22,
+    justifyContent: "space-between",
   },
   photoContainer: {
     alignItems: "center",
     marginBottom: 32,
   },
-  photo: { width: 343, height: 240, position: "relative" },
+  photo: {
+    width: "100%",
+    height: 240,
+    position: "relative",
+  },
   transparentCircle: {
     width: 60,
     height: 60,
