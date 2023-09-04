@@ -9,14 +9,16 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
-  Alert,
   ScrollView,
 } from "react-native";
-import { AntDesign, Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const CommentsScreen = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+
+  const navigation = useNavigation();
 
   const formatCommentDate = (date) => {
     const formattedDate = new Date(date).toLocaleDateString("uk-UA", {
@@ -46,6 +48,9 @@ const CommentsScreen = () => {
 
       setComments(updatedComments);
       setNewComment("");
+      console.log(updatedComments);
+      console.log(updatedComments.length);
+      navigation.setParams({ commentCount: updatedComments.length });
     }
   };
 
@@ -66,7 +71,7 @@ const CommentsScreen = () => {
           {comments.map((comment, index) => (
             <View key={index} style={styles.commentItem}>
               <Image
-                source={require("../assets/images/comentator.png")}
+                source={require("../assets/images/avatar.png")}
                 style={styles.commentatorPhoto}
               />
               <View style={styles.commentContainer}>
@@ -112,6 +117,7 @@ const styles = StyleSheet.create({
   photo: {
     width: "100%",
     height: 240,
+    borderRadius: 8,
     position: "relative",
   },
   commentsContainer: {
@@ -127,6 +133,7 @@ const styles = StyleSheet.create({
   commentatorPhoto: {
     width: 28,
     height: 28,
+    borderRadius: 28,
   },
   commentContainer: {
     flex: 1,

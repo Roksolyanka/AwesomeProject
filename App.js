@@ -9,8 +9,7 @@ import { StatusBar } from "expo-status-bar";
 import Home from "./src/Screens/Home";
 import CommentsScreen from "./src/Screens/CommentsScreen";
 import MapScreen from "./src/Screens/MapScreen";
-import { StyleSheet, TouchableOpacity } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import ButtonGoBack from "./src/components/ButtonGoBack";
 
 const Stack = createStackNavigator();
 
@@ -28,7 +27,7 @@ export default function App() {
     <>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Login">
-          {/* <Stack.Screen
+          <Stack.Screen
             name="Login"
             component={LoginScreen}
             options={{ headerShown: false }}
@@ -37,7 +36,7 @@ export default function App() {
             name="Registration"
             component={RegistrationScreen}
             options={{ headerShown: false }}
-          /> */}
+          />
           <Stack.Screen
             name="Home"
             component={Home}
@@ -55,7 +54,7 @@ export default function App() {
               },
               headerTitleStyle: {
                 color: "#212121",
-                fontFamily: "Roboto-Regular",
+                fontFamily: "Roboto-Bold",
                 fontSize: 17,
                 fontStyle: "normal",
                 fontWeight: "500",
@@ -63,15 +62,7 @@ export default function App() {
                 letterSpacing: -0.408,
               },
               headerTitleAlign: "center",
-              headerLeft: () => (
-                <TouchableOpacity onPress={() => {}}>
-                  <AntDesign
-                    name="arrowleft"
-                    size={24}
-                    style={styles.iconGoBack}
-                  />
-                </TouchableOpacity>
-              ),
+              headerLeft: () => <ButtonGoBack />,
             }}
           />
           <Stack.Screen
@@ -85,23 +76,3 @@ export default function App() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  iconGoBack: {
-    color: "#212121CC",
-    paddingLeft: 16,
-  },
-  iconLogOut: {
-    color: "#BDBDBD",
-    paddingRight: 10,
-  },
-  iconContainer: {
-    width: 70,
-    height: 40,
-    backgroundColor: "#FF6C00",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    alignSelf: "center",
-  },
-});

@@ -1,10 +1,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import CreatePostsScreen from "./CreatePostsScreen";
 import ProfileScreen from "./ProfileScreen";
 import PostsScreen from "./PostsScreen";
+import ButtonGoBack from "../components/ButtonGoBack";
+import ButtonLogOut from "../components/ButtonLogOut";
 
 const Tab = createBottomTabNavigator();
 
@@ -34,7 +36,7 @@ function Home() {
           },
           headerTitleStyle: {
             color: "#212121",
-            fontFamily: "Roboto-Regular",
+            fontFamily: "Roboto-Bold",
             fontSize: 17,
             fontStyle: "normal",
             fontWeight: "500",
@@ -42,11 +44,7 @@ function Home() {
             letterSpacing: -0.408,
           },
           headerTitleAlign: "center",
-          headerRight: () => (
-            <TouchableOpacity onPress={() => {}}>
-              <Feather name="log-out" size={24} style={styles.iconLogOut} />
-            </TouchableOpacity>
-          ),
+          headerRight: () => <ButtonLogOut />,
           tabBarIcon: () => (
             <AntDesign name="appstore-o" color="#212121CC" size={24} />
           ),
@@ -65,7 +63,7 @@ function Home() {
           },
           headerTitleStyle: {
             color: "#212121",
-            fontFamily: "Roboto-Regular",
+            fontFamily: "Roboto-Bold",
             fontSize: 17,
             fontStyle: "normal",
             fontWeight: "500",
@@ -73,16 +71,13 @@ function Home() {
             letterSpacing: -0.408,
           },
           headerTitleAlign: "center",
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => {}}>
-              <AntDesign name="arrowleft" size={24} style={styles.iconGoBack} />
-            </TouchableOpacity>
-          ),
+          headerLeft: () => <ButtonGoBack />,
           tabBarIcon: () => (
             <View style={styles.iconContainer}>
               <AntDesign name="plus" color="#fff" size={24} />
             </View>
           ),
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tab.Screen
@@ -98,14 +93,6 @@ function Home() {
 }
 
 const styles = StyleSheet.create({
-  iconGoBack: {
-    color: "#212121CC",
-    paddingLeft: 16,
-  },
-  iconLogOut: {
-    color: "#BDBDBD",
-    paddingRight: 10,
-  },
   iconContainer: {
     width: 70,
     height: 40,

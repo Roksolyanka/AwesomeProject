@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,27 +12,49 @@ import {
   Alert,
 } from "react-native";
 import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const initialState = {
   name: "",
   location: "",
+  photo: false,
 };
 
 const CreatePostsScreen = () => {
-  const [photoAdded, setPhotoAdded] = useState(false);
   const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
   const [isButtonActive, setIsButtonActive] = useState(false);
+  const [publications, setPublications] = useState([]);
+  const [newPublication, setNewPublication] = useState({});
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    updateButtonActivation();
+  }, [inputValues]);
 
   const handlePhotoAdd = () => {
-    setPhotoAdded(!photoAdded);
-    updateButtonActivation();
+    setInputValues((prevState) => ({
+      ...prevState,
+      photo: !prevState.photo,
+    }));
+  };
+
+  const updateButtonActivation = () => {
+    const isPhotoAdded = !!inputValues.photo;
+    const isNameFilled = !!inputValues.name;
+    const isLocationFilled = !!inputValues.location;
+    const hasErrors = Object.keys(errorMessages).length > 0;
+
+    setIsButtonActive(
+      isPhotoAdded && isNameFilled && isLocationFilled && !hasErrors
+    );
   };
 
   const validateForm = () => {
     const errors = {};
 
-    if (!photoAdded) {
+    if (!inputValues.photo) {
       errors.photo = "Фото обов'язкове";
     }
 
@@ -51,30 +73,29 @@ const CreatePostsScreen = () => {
 
   const clearPublicationForm = () => {
     setInputValues(initialState);
-    setPhotoAdded(false);
   };
 
   const handleCreatePublication = () => {
     if (validateForm()) {
-      const publicationData = {
-        name: inputValues.name,
-        location: inputValues.location,
-        photoAdded: photoAdded,
-      };
-      Alert.alert("Публікація успішно створена!");
-      setIsButtonActive(false);
+      if (newPublication) {
+        const updatedPublication = [
+          {
+            name: inputValues.name,
+            location: inputValues.location,
+            photo: inputValues.photo,
+          },
+          ...publications,
+        ];
+        setPublications(updatedPublication);
+        navigation.navigate("Profile", {
+          publicationData: updatedPublication,
+        });
+        setNewPublication({});
+        console.log("Publication data:", updatedPublication);
+        Alert.alert("Публікація успішно створена!");
+        clearPublicationForm();
+      }
     }
-  };
-
-  const updateButtonActivation = () => {
-    const isPhotoAdded = photoAdded;
-    const isNameFilled = !!inputValues.name;
-    const isLocationFilled = !!inputValues.location;
-    const hasErrors = Object.keys(errorMessages).length > 0;
-
-    setIsButtonActive(
-      isPhotoAdded && isNameFilled && isLocationFilled && !hasErrors
-    );
   };
 
   return (
@@ -89,35 +110,35 @@ const CreatePostsScreen = () => {
             <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
           )}
           <View style={styles.photoContainer}>
-            {photoAdded ? (
+            {inputValues.photo ? (
               <>
                 <Image
                   source={require("../assets/images/mountains.png")}
                   style={styles.photo}
                 />
-                <View style={styles.transparentCircle}>
-                  <TouchableOpacity onPress={handlePhotoAdd}>
+                <TouchableOpacity onPress={handlePhotoAdd}>
+                  <View style={styles.transparentCircle}>
                     <FontAwesome
                       name="camera"
                       size={24}
                       style={styles.iconWithPhoto}
                     />
-                  </TouchableOpacity>
-                </View>
+                  </View>
+                </TouchableOpacity>
                 <Text style={styles.uploadText}>Редагувати фото</Text>
               </>
             ) : (
               <>
                 <View style={[styles.withoutPhoto]}>
-                  <View style={styles.whiteCircle}>
-                    <TouchableOpacity onPress={handlePhotoAdd}>
+                  <TouchableOpacity onPress={handlePhotoAdd}>
+                    <View style={styles.whiteCircle}>
                       <FontAwesome
                         name="camera"
                         size={24}
                         style={styles.iconWithoutPhoto}
                       />
-                    </TouchableOpacity>
-                  </View>
+                    </View>
+                  </TouchableOpacity>
                 </View>
                 <Text style={styles.uploadText}>Завантажте фото</Text>
               </>
@@ -133,7 +154,6 @@ const CreatePostsScreen = () => {
             placeholderTextColor="#BDBDBD"
             onChangeText={(text) => {
               setInputValues((prevState) => ({ ...prevState, name: text }));
-              updateButtonActivation();
             }}
           />
           {errorMessages.location && (
@@ -155,7 +175,6 @@ const CreatePostsScreen = () => {
                   ...prevState,
                   location: text,
                 }));
-                updateButtonActivation();
               }}
             />
           </View>
@@ -163,7 +182,6 @@ const CreatePostsScreen = () => {
             style={[styles.button, !isButtonActive && styles.inactiveButton]}
             onPress={() => {
               handleCreatePublication();
-              clearPublicationForm();
             }}
             disabled={!isButtonActive}
           >
@@ -202,6 +220,7 @@ const styles = StyleSheet.create({
   photo: {
     width: "100%",
     height: 240,
+    borderRadius: 8,
     position: "relative",
   },
   transparentCircle: {
@@ -211,7 +230,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "50%",
     left: "50%",
-    transform: [{ translateX: -30 }, { translateY: -45 }],
+    transform: [{ translateX: -210 }, { translateY: -150 }],
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 30,

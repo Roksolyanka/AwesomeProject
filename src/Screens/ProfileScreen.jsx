@@ -6,15 +6,23 @@ import {
   StyleSheet,
   ImageBackground,
   Text,
+  FlatList,
 } from "react-native";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const ProfileScreen = () => {
-  const [photoAdded, setPhotoAdded] = useState(false);
+  const [photoAvatarAdded, setPhotoAdded] = useState(false);
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { publicationData } = route.params || {};
+  const commentCount = route.params?.commentCount || 0;
 
   const handlePhotoAdd = () => {
-    setPhotoAdded(!photoAdded);
+    setPhotoAdded(!photoAvatarAdded);
   };
+
+  const publications = publicationData ? publicationData : [];
 
   return (
     <ImageBackground
@@ -23,7 +31,7 @@ const ProfileScreen = () => {
     >
       <View style={styles.mainContainer}>
         <View style={styles.avatarContainer}>
-          {photoAdded ? (
+          {photoAvatarAdded ? (
             <>
               <Image
                 source={require("../assets/images/avatar.png")}
@@ -37,7 +45,11 @@ const ProfileScreen = () => {
                     size={25}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("Login");
+                  }}
+                >
                   <Feather name="log-out" size={24} style={styles.iconLogOut} />
                 </TouchableOpacity>
               </View>
@@ -53,7 +65,11 @@ const ProfileScreen = () => {
                     size={25}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("Login");
+                  }}
+                >
                   <Feather name="log-out" size={24} style={styles.iconLogOut} />
                 </TouchableOpacity>
               </View>
@@ -61,6 +77,93 @@ const ProfileScreen = () => {
           )}
         </View>
         <Text style={styles.name}>Natali Romanova</Text>
+        <FlatList
+          data={publications}
+          keyExtractor={(item, index) => index.toString()}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.publicationsContainer}>
+              {publicationData.map((publication, index) => (
+                <View style={styles.publicationContainer} key={index}>
+                  <Image
+                    source={require("../assets/images/mountains.png")}
+                    style={styles.photo}
+                  />
+                  <Text style={styles.publicationName}>{publication.name}</Text>
+                  <View style={styles.publicationDataContainer}>
+                    <View style={styles.publicationIconContainer}>
+                      {commentCount !== 0 ? (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => {
+                              navigation.navigate("Comments");
+                            }}
+                            style={styles.publicationCommentContainer}
+                          >
+                            <Ionicons
+                              name="chatbubble"
+                              size={24}
+                              style={styles.icon}
+                            />
+                            <Text style={styles.commentCount}>
+                              {commentCount}
+                            </Text>
+                          </TouchableOpacity>
+                        </>
+                      ) : (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => {
+                              navigation.navigate("Comments");
+                            }}
+                            style={styles.publicationCommentContainer}
+                          >
+                            <Ionicons
+                              name="chatbubble"
+                              size={24}
+                              style={styles.iconWithoutComments}
+                            />
+                            <Text
+                              style={[
+                                styles.commentCount,
+                                styles.commentCountZero,
+                              ]}
+                            >
+                              {commentCount}
+                            </Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      <View style={styles.publicationLikeContainer}>
+                        <Feather
+                          name="thumbs-up"
+                          size={24}
+                          style={styles.icon}
+                        />
+                        <Text style={styles.likeCount}>153</Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.publicationLocationContainer}
+                      onPress={() => {
+                        navigation.navigate("Map");
+                      }}
+                    >
+                      <AntDesign
+                        name="enviromento"
+                        size={24}
+                        style={styles.iconLocation}
+                      />
+                      <Text style={styles.location}>
+                        {publication.location}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        />
       </View>
     </ImageBackground>
   );
@@ -100,7 +203,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     width: "100%",
-    gap: 80,
+    gap: 70,
     marginTop: 16,
   },
   iconLogOut: {
@@ -130,6 +233,94 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     marginBottom: 33,
     marginTop: 40,
+  },
+  publicationsContainer: {
+    display: "flex",
+    gap: 32,
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+  },
+  publicationContainer: {
+    width: "100%",
+  },
+  photo: {
+    width: "100%",
+    height: 240,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  publicationName: {
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "500",
+    marginBottom: 10,
+  },
+  publicationDataContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  publicationIconContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 24,
+  },
+  publicationCommentContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 6,
+  },
+  commentCount: {
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    alignSelf: "flex-end",
+  },
+  iconWithoutComments: {
+    color: "#BDBDBD",
+  },
+  commentCountZero: {
+    color: "#BDBDBD",
+  },
+  publicationLikeContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 6,
+  },
+  icon: {
+    color: "#FF6C00",
+  },
+  likeCount: {
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    alignSelf: "flex-end",
+  },
+  publicationLocationContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+  },
+  iconLocation: {
+    color: "#BDBDBD",
+  },
+  location: {
+    color: "#212121",
+    textAlign: "right",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    textDecorationLine: "underline",
   },
 });
 

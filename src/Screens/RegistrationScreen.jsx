@@ -107,7 +107,7 @@ const RegistrationScreen = () => {
             text: "OK",
             onPress: () => {
               clearRegistrationForm();
-              navigation.navigate("Home"); 
+              navigation.navigate("Home");
             },
           },
         ]
