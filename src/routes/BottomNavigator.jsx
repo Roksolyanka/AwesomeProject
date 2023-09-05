@@ -2,15 +2,16 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { View, StyleSheet } from "react-native";
 import { AntDesign, Feather } from "@expo/vector-icons";
-import CreatePostsScreen from "./CreatePostsScreen";
-import ProfileScreen from "./ProfileScreen";
-import PostsScreen from "./PostsScreen";
+import PostsScreen from "../Screens/PostsScreen";
+import CreatePostsScreen from "../Screens/CreatePostsScreen";
+import ProfileScreen from "../Screens/ProfileScreen";
 import ButtonGoBack from "../components/ButtonGoBack";
 import ButtonLogOut from "../components/ButtonLogOut";
 
+
 const Tab = createBottomTabNavigator();
 
-function Home() {
+export default function BottomNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -104,4 +105,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+

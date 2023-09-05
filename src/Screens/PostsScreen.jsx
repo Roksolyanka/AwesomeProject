@@ -25,7 +25,7 @@ const PostsScreen = () => {
           style={styles.avatar}
         />
         <View>
-          <Text style={styles.name}>Natali Romanova</Text>
+          <Text style={styles.userName}>Natali Romanova</Text>
           <Text style={styles.email}>email@example.com</Text>
         </View>
       </View>
@@ -69,7 +69,7 @@ const PostsScreen = () => {
                         style={styles.publicationCommentContainer}
                       >
                         <Ionicons
-                          name="chatbubble"
+                          name="chatbubble-outline"
                           size={24}
                           style={styles.iconWithoutComments}
                         />
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 16,
   },
-  name: {
+  userName: {
     fontFamily: "Roboto-Bold",
     color: "#212121",
     fontSize: 13,

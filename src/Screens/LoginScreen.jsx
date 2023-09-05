@@ -92,7 +92,7 @@ const LoginScreen = () => {
             text: "OK",
             onPress: () => {
               clearLoginForm();
-              navigation.navigate("Home");
+              navigation.navigate("BottomNavigator");
             },
           },
         ]
