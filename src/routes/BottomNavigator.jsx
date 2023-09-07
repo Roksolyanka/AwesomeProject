@@ -12,72 +12,80 @@ import ButtonLogOut from "../components/ButtonLogOut";
 const Tab = createBottomTabNavigator();
 
 export default function BottomNavigator() {
+  
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          if (route.name === "CreatePosts") {
+            return (
+              <View
+                style={[styles.iconContainer, focused && styles.activeIcon]}
+              >
+                <AntDesign name="plus" size={size} color={color} />
+              </View>
+            );
+          } else if (route.name === "Posts") {
+            return (
+              <View
+                style={[styles.iconContainer, focused && styles.activeIcon]}
+              >
+                <AntDesign name="appstore-o" size={size} color={color} />
+              </View>
+            );
+          } else if (route.name === "Profile") {
+            return (
+              <View
+                style={[styles.iconContainer, focused && styles.activeIcon]}
+              >
+                <Feather name="user" size={size} color={color} />
+              </View>
+            );
+          }
+        },
         tabBarStyle: {
           backgroundColor: "white",
           paddingTop: 9,
           paddingBottom: 9,
+          paddingHorizontal: 81,
           borderTopWidth: 1,
           boxShadow: "0px 0.5px 0px 0px rgba(0, 0, 0, 0.30)",
         },
+        tabBarActiveTintColor: "#FFFFFF",
+        tabBarInactiveTintColor: "#212121CC",
         tabBarShowLabel: false,
-      }}
+        headerStyle: {
+          backgroundColor: "#FFF",
+          borderBottomWidth: 1,
+          boxShadow: "0px 0.5px 0px 0px rgba(0, 0, 0, 0.30)",
+        },
+        headerTitleStyle: {
+          color: "#212121",
+          fontFamily: "Roboto-Bold",
+          fontSize: 17,
+          fontStyle: "normal",
+          fontWeight: "500",
+          lineHeight: 22,
+          letterSpacing: -0.408,
+        },
+        headerTitleAlign: "center",
+        unmountOnBlur: true,
+      })}
     >
       <Tab.Screen
         name="Posts"
         component={PostsScreen}
         options={{
           title: "Публікації",
-          headerStyle: {
-            backgroundColor: "#FFF",
-            borderBottomWidth: 1,
-            boxShadow: "0px 0.5px 0px 0px rgba(0, 0, 0, 0.30)",
-          },
-          headerTitleStyle: {
-            color: "#212121",
-            fontFamily: "Roboto-Bold",
-            fontSize: 17,
-            fontStyle: "normal",
-            fontWeight: "500",
-            lineHeight: 22,
-            letterSpacing: -0.408,
-          },
-          headerTitleAlign: "center",
           headerRight: () => <ButtonLogOut />,
-          tabBarIcon: () => (
-            <AntDesign name="appstore-o" color="#212121CC" size={24} />
-          ),
         }}
       />
       <Tab.Screen
         name="CreatePosts"
         component={CreatePostsScreen}
         options={{
-          tabBarVisible: false,
           title: "Створити публікацію",
-          headerStyle: {
-            backgroundColor: "#FFF",
-            borderBottomWidth: 1,
-            boxShadow: "0px 0.5px 0px 0px rgba(0, 0, 0, 0.30)",
-          },
-          headerTitleStyle: {
-            color: "#212121",
-            fontFamily: "Roboto-Bold",
-            fontSize: 17,
-            fontStyle: "normal",
-            fontWeight: "500",
-            lineHeight: 22,
-            letterSpacing: -0.408,
-          },
-          headerTitleAlign: "center",
           headerLeft: () => <ButtonGoBack />,
-          tabBarIcon: () => (
-            <View style={styles.iconContainer}>
-              <AntDesign name="plus" color="#fff" size={24} />
-            </View>
-          ),
           tabBarStyle: { display: "none" },
         }}
       />
@@ -86,7 +94,6 @@ export default function BottomNavigator() {
         component={ProfileScreen}
         options={{
           headerShown: false,
-          tabBarIcon: () => <Feather name="user" color="#212121CC" size={24} />,
         }}
       />
     </Tab.Navigator>
@@ -97,11 +104,13 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 70,
     height: 40,
-    backgroundColor: "#FF6C00",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 20,
     alignSelf: "center",
+  },
+  activeIcon: {
+    backgroundColor: "#FF6C00",
   },
 });
 

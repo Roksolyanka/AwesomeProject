@@ -5,14 +5,15 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
   Alert,
+  ImageBackground,
 } from "react-native";
 import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import globalState from "./globalState";
 
 const initialState = {
   name: "",
@@ -24,8 +25,6 @@ const CreatePostsScreen = () => {
   const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
   const [isButtonActive, setIsButtonActive] = useState(false);
-  const [publications, setPublications] = useState([]);
-  const [newPublication, setNewPublication] = useState({});
 
   const navigation = useNavigation();
 
@@ -77,24 +76,20 @@ const CreatePostsScreen = () => {
 
   const handleCreatePublication = () => {
     if (validateForm()) {
-      if (newPublication) {
-        const updatedPublication = [
-          {
-            name: inputValues.name,
-            location: inputValues.location,
-            photo: inputValues.photo,
-          },
-          ...publications,
-        ];
-        setPublications(updatedPublication);
-        navigation.navigate("Profile", {
-          publicationData: updatedPublication,
-        });
-        setNewPublication({});
-        console.log("Publication data:", updatedPublication);
-        Alert.alert("Публікація успішно створена!");
-        clearPublicationForm();
-      }
+      const newPublication = {
+        name: inputValues.name,
+        location: inputValues.location,
+        photo: inputValues.photo,
+      };
+     globalState.publications.push(newPublication);
+      navigation.navigate("Profile", {
+        publicationData: globalState.publications,
+      });
+      console.log("Publication data:", {
+        publicationData: globalState.publications,
+      });
+      console.log("Publication data length:", globalState.publications.length);
+      Alert.alert("Публікація успішно створена!");
     }
   };
 
@@ -112,19 +107,20 @@ const CreatePostsScreen = () => {
           <View style={styles.photoContainer}>
             {inputValues.photo ? (
               <>
-                <Image
+                <ImageBackground
                   source={require("../assets/images/mountains.png")}
                   style={styles.photo}
-                />
-                <TouchableOpacity onPress={handlePhotoAdd}>
-                  <View style={styles.transparentCircle}>
-                    <FontAwesome
-                      name="camera"
-                      size={24}
-                      style={styles.iconWithPhoto}
-                    />
-                  </View>
-                </TouchableOpacity>
+                >
+                  <TouchableOpacity onPress={handlePhotoAdd}>
+                    <View style={styles.transparentCircle}>
+                      <FontAwesome
+                        name="camera"
+                        size={24}
+                        style={styles.iconWithPhoto}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </ImageBackground>
                 <Text style={styles.uploadText}>Редагувати фото</Text>
               </>
             ) : (
@@ -182,6 +178,7 @@ const CreatePostsScreen = () => {
             style={[styles.button, !isButtonActive && styles.inactiveButton]}
             onPress={() => {
               handleCreatePublication();
+              clearPublicationForm();
             }}
             disabled={!isButtonActive}
           >
@@ -195,11 +192,36 @@ const CreatePostsScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity>
-            <Feather name="trash-2" size={24} style={styles.deleteIcon} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => {
+            clearPublicationForm();
+          }}
+          style={[
+            styles.iconContainer,
+            inputValues.photo ||
+            inputValues.name.length > 0 ||
+            inputValues.location.length > 0
+              ? styles.iconContainerActive
+              : styles.iconContainerInactive,
+          ]}
+          disabled={
+            !inputValues.photo &&
+            inputValues.name.length < 1 &&
+            inputValues.location.length < 1
+          }
+        >
+          <Feather
+            name="trash-2"
+            size={24}
+            style={[
+              inputValues.photo ||
+              inputValues.name.length > 0 ||
+              inputValues.location.length > 0
+                ? styles.deleteIconActive
+                : styles.deleteIconInactive,
+            ]}
+          />
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
@@ -221,16 +243,13 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 240,
     borderRadius: 8,
-    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
   },
   transparentCircle: {
     width: 60,
     height: 60,
     backgroundColor: "rgba(255, 255, 255, 0.30)",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -210 }, { translateY: -150 }],
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 30,
@@ -332,14 +351,22 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 70,
     height: 40,
-    backgroundColor: "#F6F6F6",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 20,
     marginTop: 20,
     alignSelf: "center",
   },
-  deleteIcon: {
+  iconContainerActive: {
+    backgroundColor: "#FF6C00",
+  },
+  iconContainerInactive: {
+    backgroundColor: "#F6F6F6",
+  },
+  deleteIconActive: {
+    color: "#FFFFFF",
+  },
+  deleteIconInactive: {
     color: "#BDBDBD",
   },
   errorMessage: {

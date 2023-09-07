@@ -36,67 +36,65 @@ const PostsScreen = () => {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.publicationsContainer}>
-            {publicationData.map((publication, index) => (
-              <View style={styles.publicationContainer} key={index}>
-                <Image
-                  source={require("../assets/images/mountains.png")}
-                  style={styles.photo}
-                />
-                <Text style={styles.publicationName}>{publication.name}</Text>
-                <View style={styles.publicationDataContainer}>
-                  {commentCount !== 0 ? (
-                    <>
-                      <TouchableOpacity
-                        onPress={() => {
-                          navigation.navigate("Comments");
-                        }}
-                        style={styles.publicationCommentContainer}
+            <View style={styles.publicationContainer} key={item.name}>
+              <Image
+                source={require("../assets/images/mountains.png")}
+                style={styles.photo}
+              />
+              <Text style={styles.publicationName}>{item.name}</Text>
+              <View style={styles.publicationDataContainer}>
+                {commentCount !== 0 ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("Comments");
+                      }}
+                      style={styles.publicationCommentContainer}
+                    >
+                      <Ionicons
+                        name="chatbubble"
+                        size={24}
+                        style={styles.icon}
+                      />
+                      <Text style={styles.commentCount}>{commentCount}</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("Comments");
+                      }}
+                      style={styles.publicationCommentContainer}
+                    >
+                      <Ionicons
+                        name="chatbubble-outline"
+                        size={24}
+                        style={styles.iconWithoutComments}
+                      />
+                      <Text
+                        style={[styles.commentCount, styles.commentCountZero]}
                       >
-                        <Ionicons
-                          name="chatbubble"
-                          size={24}
-                          style={styles.icon}
-                        />
-                        <Text style={styles.commentCount}>{commentCount}</Text>
-                      </TouchableOpacity>
-                    </>
-                  ) : (
-                    <>
-                      <TouchableOpacity
-                        onPress={() => {
-                          navigation.navigate("Comments");
-                        }}
-                        style={styles.publicationCommentContainer}
-                      >
-                        <Ionicons
-                          name="chatbubble-outline"
-                          size={24}
-                          style={styles.iconWithoutComments}
-                        />
-                        <Text
-                          style={[styles.commentCount, styles.commentCountZero]}
-                        >
-                          {commentCount}
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                  <TouchableOpacity
-                    style={styles.publicationLocationContainer}
-                    onPress={() => {
-                      navigation.navigate("Map");
-                    }}
-                  >
-                    <AntDesign
-                      name="enviromento"
-                      size={24}
-                      style={styles.iconLocation}
-                    />
-                    <Text style={styles.location}>{publication.location}</Text>
-                  </TouchableOpacity>
-                </View>
+                        {commentCount}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                <TouchableOpacity
+                  style={styles.publicationLocationContainer}
+                  onPress={() => {
+                    navigation.navigate("Map");
+                  }}
+                >
+                  <AntDesign
+                    name="enviromento"
+                    size={24}
+                    style={styles.iconLocation}
+                  />
+                  <Text style={styles.location}>{item.location}</Text>
+                </TouchableOpacity>
               </View>
-            ))}
+            </View>
           </View>
         )}
       />
@@ -108,7 +106,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
-    paddingVertical: 32,
+    paddingTop: 32,
     paddingHorizontal: 16,
   },
   userContainer: {
@@ -138,12 +136,12 @@ const styles = StyleSheet.create({
   },
   publicationsContainer: {
     display: "flex",
-    gap: 32,
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
   publicationContainer: {
     width: "100%",
+    marginBottom: 23,
   },
   photo: {
     width: "100%",

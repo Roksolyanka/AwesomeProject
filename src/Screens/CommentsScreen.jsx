@@ -50,7 +50,10 @@ const CommentsScreen = () => {
       setNewComment("");
       console.log(updatedComments);
       console.log(updatedComments.length);
-      navigation.setParams({ commentCount: updatedComments.length });
+      navigation.navigate("BottomNavigator", {
+        screen: "Profile",
+        commentCount: updatedComments.length,
+      });
     }
   };
 

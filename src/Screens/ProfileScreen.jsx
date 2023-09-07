@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import UserPhoto from "../components/UserPhoto";
 
 const ProfileScreen = () => {
   const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
@@ -23,7 +24,7 @@ const ProfileScreen = () => {
     setPhotoAvatarAdded(!photoAvatarAdded);
   };
 
-  const publications = publicationData ? publicationData : [];
+  const publications = publicationData ? [...publicationData] : [];
 
   return (
     <View style={styles.container}>
@@ -33,60 +34,17 @@ const ProfileScreen = () => {
       >
         <SafeAreaView style={styles.safeContainer}>
           <View style={styles.profileContainer}>
-            <View style={styles.avatarContainer}>
-              {photoAvatarAdded ? (
-                <>
-                  <Image
-                    source={require("../assets/images/avatar.png")}
-                    style={styles.avatar}
-                  />
-                  <View style={styles.iconContainer}>
-                    <TouchableOpacity onPress={handlePhotoAdd}>
-                      <AntDesign
-                        style={styles.iconWithPhoto}
-                        name="closecircleo"
-                        size={25}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Login");
-                      }}
-                    >
-                      <Feather
-                        name="log-out"
-                        size={24}
-                        style={styles.iconLogOut}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <View style={[styles.withoutAvatar]}></View>
-                  <View style={styles.iconContainer}>
-                    <TouchableOpacity onPress={handlePhotoAdd}>
-                      <AntDesign
-                        style={styles.iconWithoutPhoto}
-                        name="pluscircleo"
-                        size={25}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Login");
-                      }}
-                    >
-                      <Feather
-                        name="log-out"
-                        size={24}
-                        style={styles.iconLogOut}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
+            <UserPhoto
+              photoAvatarAdded={photoAvatarAdded}
+              handlePhotoAdd={handlePhotoAdd}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Login");
+              }}
+            >
+              <Feather name="log-out" size={24} style={styles.iconLogOut} />
+            </TouchableOpacity>
             <Text style={styles.name}>Natali Romanova</Text>
             <FlatList
               data={publications}
@@ -94,86 +52,80 @@ const ProfileScreen = () => {
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <View style={styles.publicationsContainer}>
-                  {publicationData.map((publication, index) => (
-                    <View style={styles.publicationContainer} key={index}>
-                      <Image
-                        source={require("../assets/images/mountains.png")}
-                        style={styles.photo}
-                      />
-                      <Text style={styles.publicationName}>
-                        {publication.name}
-                      </Text>
-                      <View style={styles.publicationDataContainer}>
-                        <View style={styles.publicationIconContainer}>
-                          {commentCount !== 0 ? (
-                            <>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  navigation.navigate("Comments");
-                                }}
-                                style={styles.publicationCommentContainer}
+                  <View style={styles.publicationContainer} key={item.name}>
+                    <Image
+                      source={require("../assets/images/mountains.png")}
+                      style={styles.photo}
+                    />
+                    <Text style={styles.publicationName}>{item.name}</Text>
+                    <View style={styles.publicationDataContainer}>
+                      <View style={styles.publicationIconContainer}>
+                        {commentCount !== 0 ? (
+                          <>
+                            <TouchableOpacity
+                              onPress={() => {
+                                navigation.navigate("Comments");
+                              }}
+                              style={styles.publicationCommentContainer}
+                            >
+                              <Ionicons
+                                name="chatbubble"
+                                size={24}
+                                style={styles.icon}
+                              />
+                              <Text style={styles.commentCount}>
+                                {commentCount}
+                              </Text>
+                            </TouchableOpacity>
+                          </>
+                        ) : (
+                          <>
+                            <TouchableOpacity
+                              onPress={() => {
+                                navigation.navigate("Comments");
+                              }}
+                              style={styles.publicationCommentContainer}
+                            >
+                              <Ionicons
+                                name="chatbubble-outline"
+                                size={24}
+                                style={styles.iconWithoutComments}
+                              />
+                              <Text
+                                style={[
+                                  styles.commentCount,
+                                  styles.commentCountZero,
+                                ]}
                               >
-                                <Ionicons
-                                  name="chatbubble"
-                                  size={24}
-                                  style={styles.icon}
-                                />
-                                <Text style={styles.commentCount}>
-                                  {commentCount}
-                                </Text>
-                              </TouchableOpacity>
-                            </>
-                          ) : (
-                            <>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  navigation.navigate("Comments");
-                                }}
-                                style={styles.publicationCommentContainer}
-                              >
-                                <Ionicons
-                                  name="chatbubble-outline"
-                                  size={24}
-                                  style={styles.iconWithoutComments}
-                                />
-                                <Text
-                                  style={[
-                                    styles.commentCount,
-                                    styles.commentCountZero,
-                                  ]}
-                                >
-                                  {commentCount}
-                                </Text>
-                              </TouchableOpacity>
-                            </>
-                          )}
-                          <View style={styles.publicationLikeContainer}>
-                            <Feather
-                              name="thumbs-up"
-                              size={24}
-                              style={styles.icon}
-                            />
-                            <Text style={styles.likeCount}>153</Text>
-                          </View>
-                        </View>
-                        <TouchableOpacity
-                          style={styles.publicationLocationContainer}
-                          onPress={() => {
-                            navigation.navigate("Map");
-                          }}
-                        >
-                          <AntDesign
-                            name="enviromento"
+                                {commentCount}
+                              </Text>
+                            </TouchableOpacity>
+                          </>
+                        )}
+                        <View style={styles.publicationLikeContainer}>
+                          <Feather
+                            name="thumbs-up"
                             size={24}
-                            style={styles.iconLocation}
+                            style={styles.icon}
                           />
-                          <Text style={styles.location}>
-                            {publication.location}
-                          </Text>
-                        </TouchableOpacity>
+                          <Text style={styles.likeCount}>153</Text>
+                        </View>
                       </View>
+                      <TouchableOpacity
+                        style={styles.publicationLocationContainer}
+                        onPress={() => {
+                          navigation.navigate("Map");
+                        }}
+                      >
+                        <AntDesign
+                          name="enviromento"
+                          size={24}
+                          style={styles.iconLocation}
+                        />
+                        <Text style={styles.location}>{item.location}</Text>
+                      </TouchableOpacity>
                     </View>
-                  ))}
+                  </View>
                 </View>
               )}
             />
@@ -203,45 +155,14 @@ const styles = StyleSheet.create({
     position: "relative",
     marginTop: 147,
     paddingHorizontal: 16,
-    paddingBottom: 45,
     backgroundColor: "#FFF",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
-  avatarContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    top: -60,
-    borderRadius: 20,
-    alignItems: "center",
-  },
-  iconContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    width: "100%",
-    gap: 70,
-    marginTop: -104,
-  },
   iconLogOut: {
+    alignSelf: "flex-end",
+    top: -102,
     color: "#BDBDBD",
-  },
-  withoutAvatar: {
-    width: 120,
-    height: 120,
-    top: -60,
-    borderRadius: 20,
-    backgroundColor: "#F6F6F6",
-  },
-  iconWithPhoto: {
-    color: "#BDBDBD",
-  },
-  iconWithoutPhoto: {
-    color: "#FF6C00",
   },
   name: {
     color: "#212121",
@@ -252,16 +173,17 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.3,
     marginBottom: 33,
-    marginTop: 40,
+    marginTop: -52,
   },
   publicationsContainer: {
     display: "flex",
-    gap: 32,
+    // gap: 32,
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
   publicationContainer: {
     width: "100%",
+    marginBottom: 23,
   },
   photo: {
     width: "100%",

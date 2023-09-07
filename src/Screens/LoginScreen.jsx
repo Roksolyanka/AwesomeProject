@@ -114,7 +114,7 @@ const LoginScreen = () => {
           <View style={styles.formContainer}>
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Увійти</Text>
-              {errorMessages.email && (
+              {errorMessages.email && !inputValues.email.isFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.email}</Text>
               )}
               <TextInput
@@ -130,7 +130,7 @@ const LoginScreen = () => {
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
-              {errorMessages.password && (
+              {errorMessages.password && !inputValues.password.isFocused && (
                 <Text style={styles.errorMessage}>
                   {errorMessages.password}
                 </Text>
@@ -172,7 +172,6 @@ const LoginScreen = () => {
                 style={styles.button}
                 onPress={() => {
                   handleLogin();
-                  clearLoginForm();
                 }}
               >
                 <Text style={styles.buttonText}>Увійти</Text>

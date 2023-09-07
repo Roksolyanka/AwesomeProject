@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import UserPhoto from "../components/UserPhoto";
 
 const initialState = {
   email: { value: "", isFocused: false },
@@ -23,14 +24,14 @@ const initialState = {
 
 const RegistrationScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [photoAdded, setPhotoAdded] = useState(false);
+  const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
   const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
 
   const navigation = useNavigation();
 
   const handlePhotoAdd = () => {
-    setPhotoAdded(!photoAdded);
+    setPhotoAvatarAdded(!photoAvatarAdded);
   };
 
   const handleInputChange = (inputName, text) => {
@@ -87,7 +88,7 @@ const RegistrationScreen = () => {
 
   const clearRegistrationForm = () => {
     setInputValues(initialState);
-    setPhotoAdded(false);
+    setPhotoAvatarAdded(false);
   };
 
   const handleRegistration = () => {
@@ -96,7 +97,7 @@ const RegistrationScreen = () => {
         login: inputValues.login.value,
         email: inputValues.email.value,
         password: inputValues.password.value,
-        photoAdded: photoAdded,
+        photoAdded: photoAvatarAdded,
       };
       console.log("Реєстраційні дані:", registrationData);
       Alert.alert(
@@ -107,7 +108,9 @@ const RegistrationScreen = () => {
             text: "OK",
             onPress: () => {
               clearRegistrationForm();
-              navigation.navigate("Home");
+              navigation.navigate("BottomNavigator", {
+                screen: "Posts",
+              });
             },
           },
         ]
@@ -127,38 +130,13 @@ const RegistrationScreen = () => {
           source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
-            <View style={styles.avatarContainer}>
-              {photoAdded ? (
-                <>
-                  <Image
-                    source={require("../assets/images/avatar.png")}
-                    style={styles.avatar}
-                  />
-                  <TouchableOpacity onPress={handlePhotoAdd}>
-                    <AntDesign
-                      style={styles.iconWithPhoto}
-                      name="closecircleo"
-                      size={25}
-                    />
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <View style={[styles.withoutAvatar]}></View>
-                  <TouchableOpacity onPress={handlePhotoAdd}>
-                    <AntDesign
-                      style={styles.iconWithoutPhoto}
-                      name="pluscircleo"
-                      size={25}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-
+            <UserPhoto
+              photoAvatarAdded={photoAvatarAdded}
+              handlePhotoAdd={handlePhotoAdd}
+            />
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Реєстрація</Text>
-              {errorMessages.login && (
+              {errorMessages.login && !inputValues.login.isFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.login}</Text>
               )}
               <TextInput
@@ -173,7 +151,7 @@ const RegistrationScreen = () => {
                 onFocus={() => handleFocus("login")}
                 onBlur={() => handleBlur("login")}
               />
-              {errorMessages.email && (
+              {errorMessages.email && !inputValues.email.isFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.email}</Text>
               )}
               <TextInput
@@ -189,7 +167,7 @@ const RegistrationScreen = () => {
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
-              {errorMessages.password && (
+              {errorMessages.password && !inputValues.password.isFocused && (
                 <Text style={styles.errorMessage}>
                   {errorMessages.password}
                 </Text>
@@ -230,7 +208,6 @@ const RegistrationScreen = () => {
                 style={styles.button}
                 onPress={() => {
                   handleRegistration();
-                  clearRegistrationForm();
                 }}
               >
                 <Text style={styles.buttonText}>Зареєструватися</Text>
@@ -267,36 +244,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     justifyContent: "flex-end",
   },
-  avatarContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    position: "absolute",
-    top: -60,
-    borderRadius: 20,
-    alignItems: "center",
-  },
-  withoutAvatar: {
-    width: 120,
-    height: 120,
-    position: "absolute",
-    top: -60,
-    borderRadius: 20,
-    backgroundColor: "#F6F6F6",
-  },
-  iconWithPhoto: {
-    right: "-18%",
-    top: 16,
-    color: "#BDBDBD",
-  },
-  iconWithoutPhoto: {
-    right: "-18%",
-    top: 16,
-    color: "#FF6C00",
-  },
   form: {
     alignItems: "center",
     justifyContent: "flex-end",
@@ -310,7 +257,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.3,
     marginBottom: 33,
-    marginTop: 40,
+    marginTop: -28,
   },
   inputLogin: {
     width: "100%",
