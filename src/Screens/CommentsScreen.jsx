@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import globalState from "./globalState";
 
 const CommentsScreen = () => {
   const [comments, setComments] = useState([]);
@@ -50,8 +51,8 @@ const CommentsScreen = () => {
       setNewComment("");
       console.log(updatedComments);
       console.log(updatedComments.length);
-      navigation.navigate("BottomNavigator", {
-        screen: "Profile",
+      navigation.navigate("Profile", {
+        publicationData: globalState.publications,
         commentCount: updatedComments.length,
       });
     }
