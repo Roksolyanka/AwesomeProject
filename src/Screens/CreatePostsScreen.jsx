@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,15 @@ import {
   Alert,
   ImageBackground,
 } from "react-native";
-import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  FontAwesome5,
+} from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { Camera } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
 import globalState from "./globalState";
 
 const initialState = {
@@ -25,19 +32,12 @@ const CreatePostsScreen = () => {
   const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
   const [isButtonActive, setIsButtonActive] = useState(false);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   const navigation = useNavigation();
-
-  useEffect(() => {
-    updateButtonActivation();
-  }, [inputValues]);
-
-  const handlePhotoAdd = () => {
-    setInputValues((prevState) => ({
-      ...prevState,
-      photo: !prevState.photo,
-    }));
-  };
 
   const updateButtonActivation = () => {
     const isPhotoAdded = !!inputValues.photo;
@@ -46,8 +46,49 @@ const CreatePostsScreen = () => {
     const hasErrors = Object.keys(errorMessages).length > 0;
 
     setIsButtonActive(
-      isPhotoAdded && isNameFilled && isLocationFilled && !hasErrors
+      isCameraActive &&
+        isPhotoAdded &&
+        isNameFilled &&
+        isLocationFilled &&
+        !hasErrors
     );
+  };
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
+
+      setHasPermission(status === "granted");
+    })();
+    updateButtonActivation();
+  }, [inputValues, errorMessages, isCameraActive]);
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
+  const toggleCamera = () => {
+    setIsCameraActive(!isCameraActive);
+  };
+
+  const toggleCameraType = () => {
+    setCameraType(
+      cameraType === Camera.Constants.Type.back
+        ? Camera.Constants.Type.front
+        : Camera.Constants.Type.back
+    );
+  };
+
+  const takePhoto = async () => {
+    if (isCameraActive && cameraRef) {
+      const { uri } = await cameraRef.takePictureAsync();
+      await MediaLibrary.createAssetAsync(uri);
+      setInputValues((prevState) => ({ ...prevState, photo: uri }));
+    }
   };
 
   const validateForm = () => {
@@ -81,8 +122,8 @@ const CreatePostsScreen = () => {
         location: inputValues.location,
         photo: inputValues.photo,
       };
-     globalState.publications.push(newPublication);
-      navigation.navigate("Profile", {
+      globalState.publications.push(newPublication);
+      navigation.navigate("Posts", {
         publicationData: globalState.publications,
       });
       console.log("Publication data:", {
@@ -105,28 +146,38 @@ const CreatePostsScreen = () => {
             <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
           )}
           <View style={styles.photoContainer}>
-            {inputValues.photo ? (
+            {isCameraActive ? (
               <>
-                <ImageBackground
-                  source={require("../assets/images/mountains.png")}
-                  style={styles.photo}
+                <View style={styles.cameraContainer}>
+                  <Camera
+                    style={styles.photo}
+                    // imageStyle={{ borderRadius: 8 }}
+                    type={cameraType}
+                    ref={(ref) => setCameraRef(ref)}
+                  >
+                    <TouchableOpacity onPress={takePhoto}>
+                      <View style={styles.transparentCircle}>
+                        <FontAwesome
+                          name="camera"
+                          size={24}
+                          style={styles.iconWithPhoto}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  </Camera>
+                </View>
+                <TouchableOpacity
+                  onPress={toggleCameraType}
+                  style={styles.cameraSwitchButton}
                 >
-                  <TouchableOpacity onPress={handlePhotoAdd}>
-                    <View style={styles.transparentCircle}>
-                      <FontAwesome
-                        name="camera"
-                        size={24}
-                        style={styles.iconWithPhoto}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                </ImageBackground>
+                  <FontAwesome5 name="sync-alt" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
                 <Text style={styles.uploadText}>Редагувати фото</Text>
               </>
             ) : (
               <>
                 <View style={[styles.withoutPhoto]}>
-                  <TouchableOpacity onPress={handlePhotoAdd}>
+                  <TouchableOpacity onPress={toggleCamera}>
                     <View style={styles.whiteCircle}>
                       <FontAwesome
                         name="camera"
@@ -239,10 +290,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
   },
+  cameraContainer: {
+    width: "100%",
+    overflow: "hidden",
+    borderRadius: 8,
+  },
   photo: {
     width: "100%",
     height: 240,
-    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -278,6 +333,12 @@ const styles = StyleSheet.create({
   },
   iconWithoutPhoto: {
     color: "#BDBDBD",
+  },
+  cameraSwitchButton: {
+    alignSelf: "flex-end",
+    marginTop: -24,
+    bottom: 10,
+    right: 10,
   },
   uploadText: {
     color: "#BDBDBD",

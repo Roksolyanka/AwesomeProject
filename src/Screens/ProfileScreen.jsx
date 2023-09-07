@@ -53,10 +53,7 @@ const ProfileScreen = () => {
               renderItem={({ item }) => (
                 <View style={styles.publicationsContainer}>
                   <View style={styles.publicationContainer} key={item.name}>
-                    <Image
-                      source={require("../assets/images/mountains.png")}
-                      style={styles.photo}
-                    />
+                    <Image source={{ uri: item.photo }} style={styles.photo} />
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
