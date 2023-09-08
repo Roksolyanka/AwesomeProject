@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Alert,
-  ImageBackground,
 } from "react-native";
 import {
   AntDesign,
@@ -21,10 +20,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import globalState from "./globalState";
+import * as Location from "expo-location";
 
 const initialState = {
   name: "",
   location: "",
+  geolocation: "",
   photo: false,
 };
 
@@ -36,6 +37,7 @@ const CreatePostsScreen = () => {
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [hasPermission, setHasPermission] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  // const [postLocation, setPostLocation] = useState(null);
 
   const navigation = useNavigation();
 
@@ -88,6 +90,34 @@ const CreatePostsScreen = () => {
       const { uri } = await cameraRef.takePictureAsync();
       await MediaLibrary.createAssetAsync(uri);
       setInputValues((prevState) => ({ ...prevState, photo: uri }));
+      getCurrentLocation();
+    }
+  };
+
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      let address = await Location.reverseGeocodeAsync(location.coords);
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      console.log(location);
+      console.log(address);
+
+      setInputValues((prevState) => ({
+        ...prevState,
+        geolocation: `${address[0].city}, ${address[0].region}, ${address[0].country}`,
+      }));
+    } catch (error) {
+      console.error("Error getting location:", error);
     }
   };
 
@@ -120,6 +150,7 @@ const CreatePostsScreen = () => {
       const newPublication = {
         name: inputValues.name,
         location: inputValues.location,
+        geolocation: inputValues.geolocation,
         photo: inputValues.photo,
       };
       globalState.publications.push(newPublication);
@@ -151,7 +182,6 @@ const CreatePostsScreen = () => {
                 <View style={styles.cameraContainer}>
                   <Camera
                     style={styles.photo}
-                    // imageStyle={{ borderRadius: 8 }}
                     type={cameraType}
                     ref={(ref) => setCameraRef(ref)}
                   >

@@ -119,7 +119,9 @@ const ProfileScreen = () => {
                           size={24}
                           style={styles.iconLocation}
                         />
-                        <Text style={styles.location}>{item.location}</Text>
+                        <Text style={styles.location}>
+                          {item.location}, {item.geolocation}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -247,7 +249,9 @@ const styles = StyleSheet.create({
   publicationLocationContainer: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
+    flexShrink: 1,
+    alignItems: "center",
   },
   iconLocation: {
     color: "#BDBDBD",
@@ -260,6 +264,7 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
     textDecorationLine: "underline",
+    flexShrink: 1,
   },
 });
 

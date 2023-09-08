@@ -88,7 +88,9 @@ const PostsScreen = () => {
                     size={24}
                     style={styles.iconLocation}
                   />
-                  <Text style={styles.location}>{item.location}</Text>
+                  <Text style={styles.location}>
+                    {item.location}, {item.geolocation}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -158,11 +160,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 45,
   },
   publicationCommentContainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "flex-start",
+    alignItems: "center",
     gap: 6,
   },
   commentCount: {
@@ -171,7 +175,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
-    alignSelf: "flex-end",
   },
   iconWithoutComments: {
     color: "#BDBDBD",
@@ -185,7 +188,9 @@ const styles = StyleSheet.create({
   publicationLocationContainer: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
+    flexShrink: 1,
+    alignItems: "center",
   },
   iconLocation: {
     color: "#BDBDBD",
@@ -198,6 +203,7 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
     textDecorationLine: "underline",
+    flexShrink: 1,
   },
 });
 
