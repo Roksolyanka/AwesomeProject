@@ -164,7 +164,7 @@ const CreatePostsScreen = () => {
         photo: inputValues.photo,
       };
       globalState.publications.push(newPublication);
-      navigation.navigate("Profile", {
+      navigation.navigate("Posts", {
         publicationData: globalState.publications,
       });
       console.log("Publication data:", {
