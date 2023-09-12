@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Alert,
+  ImageBackground,
 } from "react-native";
 import {
   AntDesign,
@@ -21,6 +22,7 @@ import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import globalState from "./globalState";
 import * as Location from "expo-location";
+import Spinner from "react-native-loading-spinner-overlay";
 
 const initialState = {
   name: "",
@@ -37,7 +39,7 @@ const CreatePostsScreen = () => {
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [hasPermission, setHasPermission] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  // const [postLocation, setPostLocation] = useState(null);
+  const [waitingProcess, setWaitingProcess] = useState(false);
 
   const navigation = useNavigation();
 
@@ -56,6 +58,14 @@ const CreatePostsScreen = () => {
     );
   };
 
+  const toggleCamera = () => {
+    setInputValues((prevState) => ({
+      ...prevState,
+      photo: !prevState.photo,
+    }));
+    setIsCameraActive(!isCameraActive);
+  };
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -63,6 +73,7 @@ const CreatePostsScreen = () => {
 
       setHasPermission(status === "granted");
     })();
+    setIsCameraActive(true);
     updateButtonActivation();
   }, [inputValues, errorMessages, isCameraActive]);
 
@@ -73,10 +84,6 @@ const CreatePostsScreen = () => {
     return <Text>No access to camera</Text>;
   }
 
-  const toggleCamera = () => {
-    setIsCameraActive(!isCameraActive);
-  };
-
   const toggleCameraType = () => {
     setCameraType(
       cameraType === Camera.Constants.Type.back
@@ -86,12 +93,15 @@ const CreatePostsScreen = () => {
   };
 
   const takePhoto = async () => {
+    setWaitingProcess(true);
     if (isCameraActive && cameraRef) {
       const { uri } = await cameraRef.takePictureAsync();
       await MediaLibrary.createAssetAsync(uri);
       setInputValues((prevState) => ({ ...prevState, photo: uri }));
       getCurrentLocation();
     }
+    setWaitingProcess(false);
+    setIsCameraActive(false);
   };
 
   const getCurrentLocation = async () => {
@@ -154,7 +164,7 @@ const CreatePostsScreen = () => {
         photo: inputValues.photo,
       };
       globalState.publications.push(newPublication);
-      navigation.navigate("Posts", {
+      navigation.navigate("Profile", {
         publicationData: globalState.publications,
       });
       console.log("Publication data:", {
@@ -177,23 +187,47 @@ const CreatePostsScreen = () => {
             <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
           )}
           <View style={styles.photoContainer}>
-            {isCameraActive ? (
+            {inputValues.photo ? (
+              <>
+                <ImageBackground
+                  source={{ uri: inputValues.photo }}
+                  style={styles.photo}
+                >
+                  <TouchableOpacity onPress={toggleCamera}>
+                    <View style={styles.transparentCircle}>
+                      <FontAwesome
+                        name="camera"
+                        size={24}
+                        style={styles.iconWithPhoto}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </ImageBackground>
+                <Text style={styles.uploadText}>Редагувати фото</Text>
+              </>
+            ) : (
               <>
                 <View style={styles.cameraContainer}>
                   <Camera
-                    style={styles.photo}
+                    style={styles.camera}
                     type={cameraType}
                     ref={(ref) => setCameraRef(ref)}
                   >
                     <TouchableOpacity onPress={takePhoto}>
-                      <View style={styles.transparentCircle}>
+                      <View style={styles.whiteCircle}>
                         <FontAwesome
                           name="camera"
                           size={24}
-                          style={styles.iconWithPhoto}
+                          style={styles.iconWithoutPhoto}
                         />
                       </View>
                     </TouchableOpacity>
+                    <Spinner
+                      visible={waitingProcess}
+                      textContent={"Очікування..."}
+                      textStyle={styles.spinnerTextStyle}
+                      overlayColor="linear-gradient(rgba(46, 47, 66, 0.6), rgba(46, 47, 66, 0.6))"
+                    />
                   </Camera>
                 </View>
                 <TouchableOpacity
@@ -202,21 +236,6 @@ const CreatePostsScreen = () => {
                 >
                   <FontAwesome5 name="sync-alt" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <Text style={styles.uploadText}>Редагувати фото</Text>
-              </>
-            ) : (
-              <>
-                <View style={[styles.withoutPhoto]}>
-                  <TouchableOpacity onPress={toggleCamera}>
-                    <View style={styles.whiteCircle}>
-                      <FontAwesome
-                        name="camera"
-                        size={24}
-                        style={styles.iconWithoutPhoto}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                </View>
                 <Text style={styles.uploadText}>Завантажте фото</Text>
               </>
             )}
@@ -325,7 +344,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
   },
-  photo: {
+  camera: {
     width: "100%",
     height: 240,
     alignItems: "center",
@@ -339,12 +358,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 30,
   },
-  withoutPhoto: {
+  photo: {
     width: "100%",
     height: 240,
     borderRadius: 8,
-    backgroundColor: "#F6F6F6",
-    border: "1px solid #E8E8E8",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -462,6 +479,18 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: "#FF6C00",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+  },
+  waitingBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  spinnerTextStyle: {
+    color: "#FFFFFF",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",

@@ -12,13 +12,13 @@ import {
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
+import globalState from "./globalState";
 
 const ProfileScreen = () => {
   const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { publicationData } = route.params || {};
-  const commentCount = route.params?.commentCount || 0;
 
   const handlePhotoAdd = () => {
     setPhotoAvatarAdded(!photoAvatarAdded);
@@ -57,11 +57,13 @@ const ProfileScreen = () => {
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
-                        {commentCount !== 0 ? (
+                        {globalState.commentCounts[item.photo] !== undefined ? (
                           <>
                             <TouchableOpacity
                               onPress={() => {
-                                navigation.navigate("Comments");
+                                navigation.navigate("Comments", {
+                                  photo: item.photo,
+                                });
                               }}
                               style={styles.publicationCommentContainer}
                             >
@@ -71,7 +73,7 @@ const ProfileScreen = () => {
                                 style={styles.icon}
                               />
                               <Text style={styles.commentCount}>
-                                {commentCount}
+                                {globalState.commentCounts[item.photo]}
                               </Text>
                             </TouchableOpacity>
                           </>
@@ -79,7 +81,9 @@ const ProfileScreen = () => {
                           <>
                             <TouchableOpacity
                               onPress={() => {
-                                navigation.navigate("Comments");
+                                navigation.navigate("Comments", {
+                                  photo: item.photo,
+                                });
                               }}
                               style={styles.publicationCommentContainer}
                             >
@@ -94,7 +98,7 @@ const ProfileScreen = () => {
                                   styles.commentCountZero,
                                 ]}
                               >
-                                {commentCount}
+                                0
                               </Text>
                             </TouchableOpacity>
                           </>
@@ -176,7 +180,6 @@ const styles = StyleSheet.create({
   },
   publicationsContainer: {
     display: "flex",
-    // gap: 32,
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
@@ -214,6 +217,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     gap: 6,
+    alignItems: "center",
   },
   commentCount: {
     color: "#212121",
@@ -221,7 +225,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
-    alignSelf: "flex-end",
   },
   iconWithoutComments: {
     color: "#BDBDBD",
@@ -234,6 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     gap: 6,
+    alignItems: "center",
   },
   icon: {
     color: "#FF6C00",
@@ -244,7 +248,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
-    alignSelf: "flex-end",
   },
   publicationLocationContainer: {
     display: "flex",

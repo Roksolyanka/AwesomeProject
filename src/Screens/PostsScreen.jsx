@@ -9,12 +9,12 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import globalState from "./globalState";
 
 const PostsScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { publicationData } = route.params || {};
-  const commentCount = route.params?.commentCount || 0;
   const publications = publicationData ? publicationData : [];
 
   return (
@@ -40,11 +40,13 @@ const PostsScreen = () => {
               <Image source={{ uri: item.photo }} style={styles.photo} />
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {commentCount !== 0 ? (
+                {globalState.commentCounts[item.photo] !== undefined ? (
                   <>
                     <TouchableOpacity
                       onPress={() => {
-                        navigation.navigate("Comments");
+                        navigation.navigate("Comments", {
+                          photo: item.photo,
+                        });
                       }}
                       style={styles.publicationCommentContainer}
                     >
@@ -53,14 +55,18 @@ const PostsScreen = () => {
                         size={24}
                         style={styles.icon}
                       />
-                      <Text style={styles.commentCount}>{commentCount}</Text>
+                      <Text style={styles.commentCount}>
+                        {globalState.commentCounts[item.photo]}
+                      </Text>
                     </TouchableOpacity>
                   </>
                 ) : (
                   <>
                     <TouchableOpacity
                       onPress={() => {
-                        navigation.navigate("Comments");
+                        navigation.navigate("Comments", {
+                          photo: item.photo,
+                        });
                       }}
                       style={styles.publicationCommentContainer}
                     >
@@ -72,7 +78,7 @@ const PostsScreen = () => {
                       <Text
                         style={[styles.commentCount, styles.commentCountZero]}
                       >
-                        {commentCount}
+                        0
                       </Text>
                     </TouchableOpacity>
                   </>

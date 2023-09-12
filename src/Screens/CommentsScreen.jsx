@@ -12,14 +12,15 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import globalState from "./globalState";
+import { useRoute } from "@react-navigation/native";
+import { updateCommentCount } from "./globalState";
 
 const CommentsScreen = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
-  const navigation = useNavigation();
+  const route = useRoute();
+  const { photo } = route.params || {};
 
   const formatCommentDate = (date) => {
     const formattedDate = new Date(date).toLocaleDateString("uk-UA", {
@@ -51,10 +52,8 @@ const CommentsScreen = () => {
       setNewComment("");
       console.log(updatedComments);
       console.log(updatedComments.length);
-      navigation.navigate("Profile", {
-        publicationData: globalState.publications,
-        commentCount: updatedComments.length,
-      });
+      const publicationId = photo;
+      updateCommentCount(publicationId, updatedComments.length);
     }
   };
 
@@ -66,10 +65,7 @@ const CommentsScreen = () => {
         keyboardVerticalOffset={-120}
       >
         <View style={styles.photoContainer}>
-          <Image
-            source={require("../assets/images/sea.png")}
-            style={styles.photo}
-          />
+          <Image source={{ uri: photo }} style={styles.photo} />
         </View>
         <ScrollView style={styles.commentsContainer}>
           {comments.map((comment, index) => (

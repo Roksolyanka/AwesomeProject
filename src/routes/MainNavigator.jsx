@@ -54,7 +54,25 @@ export default function MainNavigator() {
        <Stack.Screen
          name="Map"
          component={MapScreen}
-         options={{ headerShown: false }}
+         options={{
+           title: "Карта",
+           headerStyle: {
+             backgroundColor: "#FFF",
+             borderBottomWidth: 1,
+             boxShadow: "0px 0.5px 0px 0px rgba(0, 0, 0, 0.30)",
+           },
+           headerTitleStyle: {
+             color: "#212121",
+             fontFamily: "Roboto-Bold",
+             fontSize: 17,
+             fontStyle: "normal",
+             fontWeight: "500",
+             lineHeight: 22,
+             letterSpacing: -0.408,
+           },
+           headerTitleAlign: "center",
+           headerLeft: () => <ButtonGoBack />,
+         }}
        />
      </Stack.Navigator>
    );
