@@ -13,9 +13,12 @@ import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
 import globalState from "./globalState";
+import { logoutUserThunk } from "../redux/auth/authOperations";
+import { useDispatch } from "react-redux";
 
 const ProfileScreen = () => {
   const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const route = useRoute();
   const { publicationData } = route.params || {};
@@ -40,6 +43,7 @@ const ProfileScreen = () => {
             />
             <TouchableOpacity
               onPress={() => {
+                dispatch(logoutUserThunk());
                 navigation.navigate("Login");
               }}
             >

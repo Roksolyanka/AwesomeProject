@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Image,
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
@@ -12,26 +11,34 @@ import {
   Keyboard,
   Alert,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
+import { useDispatch } from "react-redux";
+import { registerUserThunk } from "../redux/auth/authOperations";
 
 const initialState = {
-  email: { value: "", isFocused: false },
-  password: { value: "", isFocused: false },
-  login: { value: "", isFocused: false },
+  email: "",
+  password: "",
+  login: "",
+  photo: false,
 };
 
 const RegistrationScreen = () => {
+  const [state, setState] = useState(initialState);
+  const [isLoginFocused, setLoginFocused] = useState(false);
+  const [isEmailFocused, setEmailFocused] = useState(false);
+  const [isPasswordFocused, setPasswordFocused] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
-  const [inputValues, setInputValues] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
-
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const handlePhotoAdd = () => {
-    setPhotoAvatarAdded(!photoAvatarAdded);
+    setState((prevValues) => ({
+      ...prevValues,
+      photo: !prevValues.photo,
+    }));
   };
 
   const handleInputChange = (inputName, text) => {
@@ -39,40 +46,51 @@ const RegistrationScreen = () => {
       text = text.toLowerCase();
     }
 
-    setInputValues((prevValues) => ({
+    setState((prevValues) => ({
       ...prevValues,
-      [inputName]: { ...prevValues[inputName], value: text },
+      [inputName]: text,
     }));
   };
 
   const handleFocus = (inputName) => {
-    setInputValues((prev) => ({
-      ...prev,
-      [inputName]: { ...prev[inputName], isFocused: true },
-    }));
+    if (inputName === "login") {
+      setLoginFocused(true);
+      setEmailFocused(false);
+      setPasswordFocused(false);
+    } else if (inputName === "email") {
+      setLoginFocused(false);
+      setEmailFocused(true);
+      setPasswordFocused(false);
+    } else if (inputName === "password") {
+      setLoginFocused(false);
+      setEmailFocused(false);
+      setPasswordFocused(true);
+    }
   };
 
-  const handleBlur = (inputName) => {
-    setInputValues((prev) => ({
-      ...prev,
-      [inputName]: { ...prev[inputName], isFocused: false },
-    }));
+  const handleBlur = () => {
+    setLoginFocused(false);
+    setEmailFocused(false);
+    setPasswordFocused(false);
   };
 
   const validateForm = () => {
     const errors = {};
+    if (state.photo) {
+      errors.photo = "Фотографія обов'язкова";
+    }
 
-    if (!inputValues.login.value) {
+    if (!state.login) {
       errors.login = "Логін обов'язковий";
     }
 
-    if (!inputValues.email.value) {
+    if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-    } else if (!isValidEmail(inputValues.email.value)) {
+    } else if (!isValidEmail(state.email)) {
       errors.email = "Введіть дійсну електронну пошту";
     }
 
-    if (!inputValues.password.value) {
+    if (!state.password) {
       errors.password = "Пароль обов'язковий";
     }
 
@@ -87,22 +105,22 @@ const RegistrationScreen = () => {
   };
 
   const clearRegistrationForm = () => {
-    setInputValues(initialState);
-    setPhotoAvatarAdded(false);
+    setState(initialState);
   };
 
   const handleRegistration = () => {
     if (validateForm()) {
       const registrationData = {
-        login: inputValues.login.value,
-        email: inputValues.email.value,
-        password: inputValues.password.value,
-        photoAdded: photoAvatarAdded,
+        login: state.login,
+        email: state.email,
+        password: state.password,
+        photoAdded: state.photo,
       };
+      dispatch(registerUserThunk(state));
       console.log("Реєстраційні дані:", registrationData);
       Alert.alert(
         "Реєстрація успішна! Облікові дані:",
-        `${inputValues.login.value} + ${inputValues.email.value} + ${inputValues.password.value}`,
+        `${state.login} + ${state.email} + ${state.password}`,
         [
           {
             text: "OK",
@@ -118,8 +136,13 @@ const RegistrationScreen = () => {
     }
   };
 
+  const keyboardHide = () => {
+    Keyboard.dismiss();
+    setIsShowKeyboard(false);
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={keyboardHide}>
       <KeyboardAvoidingView
         behavior={Platform.OS == "ios" ? "padding" : "height"}
         style={styles.container}
@@ -130,44 +153,44 @@ const RegistrationScreen = () => {
           source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
-            <UserPhoto
-              photoAvatarAdded={photoAvatarAdded}
-              handlePhotoAdd={handlePhotoAdd}
-            />
+            <UserPhoto handlePhotoAdd={handlePhotoAdd} />
+            {errorMessages.photo && (
+              <Text style={styles.errorMessagePhoto}>{errorMessages.photo}</Text>
+            )}
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Реєстрація</Text>
-              {errorMessages.login && !inputValues.login.isFocused && (
+              {errorMessages.login && !isLoginFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.login}</Text>
               )}
               <TextInput
                 placeholder="Логін"
-                value={inputValues.login.value}
+                value={state.login}
                 autoComplete="username"
                 style={[
                   styles.inputLogin,
-                  inputValues.login.isFocused && styles.inputFocused,
+                  isLoginFocused && styles.inputFocused,
                 ]}
                 onChangeText={(text) => handleInputChange("login", text)}
                 onFocus={() => handleFocus("login")}
                 onBlur={() => handleBlur("login")}
               />
-              {errorMessages.email && !inputValues.email.isFocused && (
+              {errorMessages.email && !isEmailFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.email}</Text>
               )}
               <TextInput
                 placeholder="Адреса електронної пошти"
-                value={inputValues.email.value}
+                value={state.email}
                 autoComplete="email"
                 keyboardType="email-address"
                 style={[
                   styles.inputEmail,
-                  inputValues.email.isFocused && styles.inputFocused,
+                  isEmailFocused && styles.inputFocused,
                 ]}
                 onChangeText={(text) => handleInputChange("email", text)}
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
-              {errorMessages.password && !inputValues.password.isFocused && (
+              {errorMessages.password && !isPasswordFocused && (
                 <Text style={styles.errorMessage}>
                   {errorMessages.password}
                 </Text>
@@ -175,19 +198,19 @@ const RegistrationScreen = () => {
               <View
                 style={[
                   styles.inputPasswordContainer,
-                  inputValues.password.isFocused && styles.inputFocused,
+                  isPasswordFocused && styles.inputFocused,
                 ]}
                 onFocus={() => handleFocus("password")}
                 onBlur={() => handleBlur("password")}
               >
                 <TextInput
                   placeholder="Пароль"
-                  value={inputValues.password.value}
+                  value={state.password}
                   autoComplete="password"
                   secureTextEntry={!isPasswordVisible}
                   style={[
                     styles.inputPassword,
-                    inputValues.password.isFocused && styles.inputFocused,
+                    isPasswordFocused && styles.inputFocused,
                   ]}
                   onChangeText={(text) => handleInputChange("password", text)}
                 />
@@ -197,7 +220,7 @@ const RegistrationScreen = () => {
                   <Text
                     style={[
                       styles.buttonViewPassword,
-                      inputValues.password.isFocused && styles.inputFocused,
+                      isPasswordFocused && styles.inputFocused,
                     ]}
                   >
                     {isPasswordVisible ? "Приховати" : "Показати"}
@@ -369,6 +392,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
+  },
+  errorMessagePhoto: {
+    color: "#FF6C00",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    alignSelf: "center",
+    top: -50,
   },
 });
 

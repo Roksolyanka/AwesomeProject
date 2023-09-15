@@ -1,20 +1,88 @@
 import { AntDesign } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
   View,
+  Alert,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
-const UserPhoto = ({ photoAvatarAdded, handlePhotoAdd }) => {
+const UserPhoto = ({ handlePhotoAdd }) => {
+  const [image, setImage] = useState(null);
+
+  const selectImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+    if (result.canceled) {
+      Alert.alert("Вибір фотографії скасовано", "", [], { cancelable: true });
+    } else if (result.error) {
+      Alert.alert("Помилка вибору фото", "", [], { cancelable: true });
+    } else {
+      let imageUri = result;
+      setImage(imageUri?.assets[0]?.uri);
+    }
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const openCamera = async () => {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      includeBase64: false,
+      maxHeight: 120,
+      maxWidth: 120,
+    });
+    if (result.canceled) {
+      Alert.alert("Користувач відмінив використання камери", "", [], {
+        cancelable: true,
+      });
+    } else if (result.error) {
+      Alert.alert("Помилка камери", "", [], {
+        cancelable: true,
+      });
+    } else {
+      let imageUri = result;
+      setImage(imageUri?.assets[0]?.uri);
+    }
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const getPhotoNotification = () => {
+    Alert.alert(
+      "Виберіть фото",
+      " ",
+      [
+        { text: "Закрити", callingCode: true },
+        { text: "Галерея", onPress: () => selectImage() },
+        { text: "Камера", onPress: () => openCamera() },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const clearPhotoUser = () => {
+    setImage(null);
+    handlePhotoAdd(false);
+  };
+
   return (
     <View style={styles.avatarContainer}>
-      {photoAvatarAdded ? (
-        <ImageBackground
-          source={require("../assets/images/avatar.png")}
-          style={styles.avatar}
-        >
-          <TouchableOpacity onPress={handlePhotoAdd}>
+      {image ? (
+        <ImageBackground source={{ uri: image }} style={styles.avatar}>
+          <TouchableOpacity
+            onPress={() => {
+              clearPhotoUser();
+            }}
+          >
             <AntDesign
               style={styles.iconWithPhoto}
               name="closecircleo"
@@ -23,8 +91,12 @@ const UserPhoto = ({ photoAvatarAdded, handlePhotoAdd }) => {
           </TouchableOpacity>
         </ImageBackground>
       ) : (
-        <View style={[styles.withoutAvatar]}>
-          <TouchableOpacity onPress={handlePhotoAdd}>
+        <View style={styles.withoutAvatar}>
+          <TouchableOpacity
+            onPress={() => {
+              getPhotoNotification();
+            }}
+          >
             <AntDesign
               style={styles.iconWithoutPhoto}
               name="pluscircleo"

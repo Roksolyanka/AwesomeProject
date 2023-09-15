@@ -12,17 +12,22 @@ import {
   Keyboard,
   Alert,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { loginUserThunk } from "../redux/auth/authOperations";
 
 const initialState = {
-  email: { value: "", isFocused: false },
-  password: { value: "", isFocused: false },
+  email: "",
+  password: "",
 };
 
 const LoginScreen = () => {
-  const [inputValues, setInputValues] = useState(initialState);
+  const [state, setState] = useState(initialState);
+  const [isEmailFocused, setEmailFocused] = useState(false);
+  const [isPasswordFocused, setPasswordFocused] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState({});
-
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const handleInputChange = (inputName, text) => {
@@ -30,36 +35,37 @@ const LoginScreen = () => {
       text = text.toLowerCase();
     }
 
-    setInputValues((prevValues) => ({
+    setState((prevValues) => ({
       ...prevValues,
-      [inputName]: { ...prevValues[inputName], value: text },
+      [inputName]: text,
     }));
   };
 
   const handleFocus = (inputName) => {
-    setInputValues((prev) => ({
-      ...prev,
-      [inputName]: { ...prev[inputName], isFocused: true },
-    }));
+    if (inputName === "email") {
+      setEmailFocused(true);
+      setPasswordFocused(false);
+    } else if (inputName === "password") {
+      setEmailFocused(false);
+      setPasswordFocused(true);
+    }
   };
 
-  const handleBlur = (inputName) => {
-    setInputValues((prev) => ({
-      ...prev,
-      [inputName]: { ...prev[inputName], isFocused: false },
-    }));
+  const handleBlur = () => {
+    setEmailFocused(false);
+    setPasswordFocused(false);
   };
 
   const validateForm = () => {
     const errors = {};
 
-    if (!inputValues.email.value) {
+    if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-    } else if (!isValidEmail(inputValues.email.value)) {
+    } else if (!isValidEmail(state.email)) {
       errors.email = "Введіть дійсну електронну пошту";
     }
 
-    if (!inputValues.password.value) {
+    if (!state.password) {
       errors.password = "Пароль обов'язковий";
     }
 
@@ -74,19 +80,20 @@ const LoginScreen = () => {
   };
 
   const clearLoginForm = () => {
-    setInputValues(initialState);
+    setState(initialState);
   };
 
   const handleLogin = () => {
     if (validateForm()) {
       const loginData = {
-        email: inputValues.email.value,
-        password: inputValues.password.value,
+        email: state.email,
+        password: state.password,
       };
+      dispatch(loginUserThunk(state));
       console.log("Дані для входу:", loginData);
       Alert.alert(
         "Вхід успішний! Облікові дані:",
-        `${inputValues.email.value} + ${inputValues.password.value}`,
+        `${state.email} + ${state.password}`,
         [
           {
             text: "OK",
@@ -100,8 +107,13 @@ const LoginScreen = () => {
     }
   };
 
+  const keyboardHide = () => {
+    Keyboard.dismiss();
+    setIsShowKeyboard(false);
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={keyboardHide}>
       <KeyboardAvoidingView
         behavior={Platform.OS == "ios" ? "padding" : "height"}
         style={styles.container}
@@ -114,23 +126,23 @@ const LoginScreen = () => {
           <View style={styles.formContainer}>
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Увійти</Text>
-              {errorMessages.email && !inputValues.email.isFocused && (
+              {errorMessages.email && !isEmailFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.email}</Text>
               )}
               <TextInput
                 placeholder="Адреса електронної пошти"
-                value={inputValues.email.value}
+                value={state.email}
                 autoComplete="email"
                 keyboardType="email-address"
-                onChangeText={(text) => handleInputChange("email", text)}
                 style={[
                   styles.inputEmail,
-                  inputValues.email.isFocused && styles.inputFocused,
+                  isEmailFocused && styles.inputFocused,
                 ]}
+                onChangeText={(text) => handleInputChange("email", text)}
                 onFocus={() => handleFocus("email")}
                 onBlur={() => handleBlur("email")}
               />
-              {errorMessages.password && !inputValues.password.isFocused && (
+              {errorMessages.password && !isPasswordFocused && (
                 <Text style={styles.errorMessage}>
                   {errorMessages.password}
                 </Text>
@@ -138,20 +150,20 @@ const LoginScreen = () => {
               <View
                 style={[
                   styles.inputPasswordContainer,
-                  inputValues.password.isFocused && styles.inputFocused,
+                  isPasswordFocused && styles.inputFocused,
                 ]}
                 onFocus={() => handleFocus("password")}
                 onBlur={() => handleBlur("password")}
               >
                 <TextInput
                   placeholder="Пароль"
-                  value={inputValues.password.value}
+                  value={state.password}
                   autoComplete="password"
                   onChangeText={(text) => handleInputChange("password", text)}
                   secureTextEntry={!isPasswordVisible}
                   style={[
                     styles.inputPassword,
-                    inputValues.password.isFocused && styles.inputFocused,
+                    isPasswordFocused && styles.inputFocused,
                   ]}
                 />
                 <TouchableOpacity
@@ -160,7 +172,7 @@ const LoginScreen = () => {
                   <Text
                     style={[
                       styles.buttonViewPassword,
-                      inputValues.password.isFocused && styles.inputFocused,
+                      isPasswordFocused && styles.inputFocused,
                     ]}
                   >
                     {isPasswordVisible ? "Приховати" : "Показати"}
