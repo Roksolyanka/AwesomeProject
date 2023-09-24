@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
+  ToastAndroid,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { loginUserThunk } from "../redux/auth/authOperations";
@@ -61,12 +62,14 @@ const LoginScreen = () => {
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
+       ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email)) {
       errors.email = "Введіть дійсну електронну пошту";
     }
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
+      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     }
 
     setErrorMessages(errors);
@@ -133,6 +136,7 @@ const LoginScreen = () => {
                 placeholder="Адреса електронної пошти"
                 value={state.email}
                 autoComplete="email"
+                autoCapitalize="none"
                 keyboardType="email-address"
                 style={[
                   styles.inputEmail,
@@ -159,6 +163,7 @@ const LoginScreen = () => {
                   placeholder="Пароль"
                   value={state.password}
                   autoComplete="password"
+                  autoCapitalize="none"
                   onChangeText={(text) => handleInputChange("password", text)}
                   secureTextEntry={!isPasswordVisible}
                   style={[

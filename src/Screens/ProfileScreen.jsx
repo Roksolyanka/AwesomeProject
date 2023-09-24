@@ -15,9 +15,11 @@ import UserPhoto from "../components/UserPhoto";
 import globalState from "./globalState";
 import { logoutUserThunk } from "../redux/auth/authOperations";
 import { useDispatch } from "react-redux";
+import { useUser } from "../hooks/index.js";
 
 const ProfileScreen = () => {
   const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
+  const { user } = useUser();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const route = useRoute();
@@ -49,7 +51,7 @@ const ProfileScreen = () => {
             >
               <Feather name="log-out" size={24} style={styles.iconLogOut} />
             </TouchableOpacity>
-            <Text style={styles.name}>Natali Romanova</Text>
+            <Text style={styles.name}>{user.displayName}</Text>
             <FlatList
               data={publications}
               keyExtractor={(item, index) => index.toString()}

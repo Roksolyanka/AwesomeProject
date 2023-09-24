@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { logoutUserThunk } from "../redux/auth/authOperations";
 
 const ButtonLogOut = () => {
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   return (
     <TouchableOpacity

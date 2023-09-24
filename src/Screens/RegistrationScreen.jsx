@@ -19,8 +19,8 @@ import { registerUserThunk } from "../redux/auth/authOperations";
 const initialState = {
   email: "",
   password: "",
-  login: "",
-  photo: false,
+  displayName: "",
+  photoURL: null,
 };
 
 const RegistrationScreen = () => {
@@ -34,18 +34,21 @@ const RegistrationScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const handlePhotoAdd = () => {
+  // const handlePhotoAdd = (photoAdded) => {
+  //   setState((prevValues) => ({
+  //     ...prevValues,
+  //     photo: photoAdded,
+  //   }));
+  // };
+
+  const handlePhotoUrl = (url) => {
     setState((prevValues) => ({
       ...prevValues,
-      photo: !prevValues.photo,
+      photoURL: url,
     }));
   };
 
   const handleInputChange = (inputName, text) => {
-    if (inputName === "password") {
-      text = text.toLowerCase();
-    }
-
     setState((prevValues) => ({
       ...prevValues,
       [inputName]: text,
@@ -53,7 +56,7 @@ const RegistrationScreen = () => {
   };
 
   const handleFocus = (inputName) => {
-    if (inputName === "login") {
+    if (inputName === "displayName") {
       setLoginFocused(true);
       setEmailFocused(false);
       setPasswordFocused(false);
@@ -76,22 +79,24 @@ const RegistrationScreen = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (state.photo) {
+    if (!state.photoURL) {
       errors.photo = "Фотографія обов'язкова";
     }
 
-    if (!state.login) {
-      errors.login = "Логін обов'язковий";
+    if (!state.displayName) {
+      errors.displayName = "Логін обов'язковий";
     }
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-    } else if (!isValidEmail(state.email)) {
+    } else if (!isValidEmail(state.email) || state.email.length < 5) {
       errors.email = "Введіть дійсну електронну пошту";
     }
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
+    } else if (state.password.length < 6) {
+      errors.password = "Довжина паролю повинна бути не менше 6 символів!";
     }
 
     setErrorMessages(errors);
@@ -111,16 +116,16 @@ const RegistrationScreen = () => {
   const handleRegistration = () => {
     if (validateForm()) {
       const registrationData = {
-        login: state.login,
+        displayName: state.displayName,
         email: state.email,
         password: state.password,
-        photoAdded: state.photo,
+        photoURL: state.photoURL,
       };
-      dispatch(registerUserThunk(state));
+      dispatch(registerUserThunk(registrationData));
       console.log("Реєстраційні дані:", registrationData);
       Alert.alert(
         "Реєстрація успішна! Облікові дані:",
-        `${state.login} + ${state.email} + ${state.password}`,
+        `${state.displayName} + ${state.email} + ${state.password}`,
         [
           {
             text: "OK",
@@ -153,26 +158,33 @@ const RegistrationScreen = () => {
           source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
-            <UserPhoto handlePhotoAdd={handlePhotoAdd} />
+            <UserPhoto
+              // handlePhotoAdd={handlePhotoAdd}
+              handlePhotoUrl={handlePhotoUrl}
+            />
             {errorMessages.photo && (
-              <Text style={styles.errorMessagePhoto}>{errorMessages.photo}</Text>
+              <Text style={styles.errorMessagePhoto}>
+                {errorMessages.photo}
+              </Text>
             )}
             <View style={styles.form}>
               <Text style={styles.titleEnter}>Реєстрація</Text>
-              {errorMessages.login && !isLoginFocused && (
-                <Text style={styles.errorMessage}>{errorMessages.login}</Text>
+              {errorMessages.displayName && !isLoginFocused && (
+                <Text style={styles.errorMessage}>
+                  {errorMessages.displayName}
+                </Text>
               )}
               <TextInput
                 placeholder="Логін"
-                value={state.login}
+                value={state.displayName}
                 autoComplete="username"
                 style={[
                   styles.inputLogin,
                   isLoginFocused && styles.inputFocused,
                 ]}
-                onChangeText={(text) => handleInputChange("login", text)}
-                onFocus={() => handleFocus("login")}
-                onBlur={() => handleBlur("login")}
+                onChangeText={(text) => handleInputChange("displayName", text)}
+                onFocus={() => handleFocus("displayName")}
+                onBlur={() => handleBlur("displayName")}
               />
               {errorMessages.email && !isEmailFocused && (
                 <Text style={styles.errorMessage}>{errorMessages.email}</Text>
@@ -181,6 +193,7 @@ const RegistrationScreen = () => {
                 placeholder="Адреса електронної пошти"
                 value={state.email}
                 autoComplete="email"
+                autoCapitalize="none"
                 keyboardType="email-address"
                 style={[
                   styles.inputEmail,
@@ -207,6 +220,7 @@ const RegistrationScreen = () => {
                   placeholder="Пароль"
                   value={state.password}
                   autoComplete="password"
+                  autoCapitalize="none"
                   secureTextEntry={!isPasswordVisible}
                   style={[
                     styles.inputPassword,

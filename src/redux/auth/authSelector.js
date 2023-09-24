@@ -1,0 +1,9 @@
+export const selectUser = (state) => state.auth.userData;
+export const selectIsLoading = (state) => state.auth.isLoading;
+export const selectErrorLogin = (state) => state.auth.errorLogin;
+export const selectErrorRegister = (state) => state.auth.errorRegister;
+export const selectErroRefresh = (state) => state.auth.errorRefresh;
+export const selectErrorLogOut = (state) => state.auth.errorLogOut;
+export const selectErrorAddPhotoUser = (state) => state.auth.errorAddPhotoUser;
+export const selectErrorDeletePhotoUser = (state) => state.auth.errorDeletePhotoUser;
+export const selectUserName = (state) => state.auth.userData?.displayName;

@@ -12,7 +12,7 @@ const authInitialState = {
   userData: {
     displayName: null,
     email: null,
-    photoUserURL: null,
+    photoURL: null,
     password: null,
   },
   isLoading: false,
@@ -24,13 +24,33 @@ const authInitialState = {
   errorDeletePhotoUser: null,
 };
 
+export const updateUser = (user) => ({
+  type: "auth/updateUser",
+  payload: {
+    displayName: user ? user.login : null,
+    email: user ? user.email : null,
+    photoURL: user ? user.photoURL : null,
+  },
+});
+
 const authSlice = createSlice({
   name: "user",
   initialState: authInitialState,
+
+  // !--------------------------------UPDATE USER INFORMATION --------------------------------
+
+  reducers: {
+    [updateUser.type]: (state, action) => {
+      state.userData = action.payload;
+    },
+  },
+
+  // !----------------------------------------------------------------------------------------
+
   extraReducers: (builder) => {
     builder
 
-      // --------------------------------REGISTER --------------------------------
+      // !--------------------------------REGISTER --------------------------------
 
       .addCase(registerUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -45,7 +65,7 @@ const authSlice = createSlice({
         state.errorRegister = action.error.message;
       })
 
-      // -----------------------------LOGIN-----------------------------------
+      // !-----------------------------LOGIN-----------------------------------
 
       .addCase(loginUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -63,7 +83,7 @@ const authSlice = createSlice({
         state.errorLogin = action.error.message;
       })
 
-      // -----------------------------REFRESH-----------------------------------
+      // !-----------------------------REFRESH-----------------------------------
 
       .addCase(refreshUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -78,7 +98,7 @@ const authSlice = createSlice({
         state.errorRefresh = action.error.message;
       })
 
-      // -----------------------------LOGOUT-----------------------------------
+      // !-----------------------------LOGOUT-----------------------------------
 
       .addCase(logoutUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -93,7 +113,7 @@ const authSlice = createSlice({
         state.errorLogOut = action.payload;
       })
 
-      // -------------------------------addPhotoUser--------------------------------
+      // !-------------------------------addPhotoUser--------------------------------
 
       .addCase(addPhotoUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -102,14 +122,14 @@ const authSlice = createSlice({
       .addCase(addPhotoUserThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.errorAddPhotoUser = null;
-        state.userData.photoUserURL = action.payload;
+        state.userData.photoURL = action.payload;
       })
       .addCase(addPhotoUserThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.errorAddPhotoUser = action.payload;
       })
 
-      // -------------------------------deletePhotoUser--------------------------------
+      // !-------------------------------deletePhotoUser--------------------------------
 
       .addCase(deletePhotoUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -118,7 +138,7 @@ const authSlice = createSlice({
       .addCase(deletePhotoUserThunk.fulfilled, (state) => {
         state.isLoading = false;
         state.errorDeletePhotoUser = null;
-        state.userData.photoUserURL = null;
+        state.userData.photoURL = null;
       })
       .addCase(deletePhotoUserThunk.rejected, (state, action) => {
         state.isLoading = false;

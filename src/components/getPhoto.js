@@ -7,7 +7,7 @@ export const getUserDataFromFirestore = async (userId) => {
     const userDocRef = doc(db, "users", userId);
     const userDoc = await getDocs(userDocRef);
     if (userDoc.exists()) {
-      return userDoc.data().photoUserURL;
+      return userDoc.data().photoURL;
     }
     return null;
   } catch (error) {

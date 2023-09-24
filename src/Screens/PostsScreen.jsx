@@ -8,25 +8,29 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  ImageBackground,
 } from "react-native";
 import globalState from "./globalState";
+import { useUser } from "../hooks/index";
 
 const PostsScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { publicationData } = route.params || {};
   const publications = publicationData ? publicationData : [];
+  const { user } = useUser();
 
   return (
     <View style={styles.container}>
       <View style={styles.userContainer}>
-        <Image
-          source={require("../assets/images/avatar.png")}
-          style={styles.avatar}
-        />
+        {user.photoURL ? (
+          <Image source={{ uri: user.photoURL }} style={styles.avatar}></Image>
+        ) : (
+          <View style={styles.withoutAvatar}></View>
+        )}
         <View>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.email}>email@example.com</Text>
+          <Text style={styles.userName}>{user.displayName}</Text>
+          <Text style={styles.email}>{user.email}</Text>
         </View>
       </View>
 
@@ -121,6 +125,12 @@ const styles = StyleSheet.create({
     marginBottom: 23,
   },
   avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+  },
+  withoutAvatar: {
+    backgroundColor: "#F6F6F6",
     width: 60,
     height: 60,
     borderRadius: 16,
