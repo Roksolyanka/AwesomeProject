@@ -7,111 +7,82 @@ import {
 } from "firebase/auth";
 import { auth, db, storage } from "../config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { ToastAndroid } from "react-native";
 import {
   uploadBytes,
   getDownloadURL,
   ref,
-  uploadString,
+  deleteObject,
 } from "firebase/storage";
-import { nanoid } from "nanoid";
 
-// Операція реєстрації користувача
-// export const registerUserThunk = createAsyncThunk(
-//   "auth/register",
-//   async ({ email, password, photoUrl }) => {
-//     try {
-//       // Створення користувача в Firebase Auth
-//       const userCredential = await createUserWithEmailAndPassword(
-//         auth,
-//         email,
-//         password
-//       );
-//       const user = userCredential.user;
+const uploadUserPhotoToStorage = async (storageRef, photoFile) => {
+  try {
+    await uploadBytes(storageRef, photoFile);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    throw error;
+  }
+};
 
-//       // Зберігаємо дані користувача в Firestore
-//       const firestore = getFirestore();
-//       const userRef = doc(firestore, "users", user.uid);
-//       await setDoc(userRef, {
-//         email: user.email,
-//         displayName: user.displayName,
-//         photoUserURL: photoUrl,
-//       });
+const updateUserPhotoInFirestore = async (
+  collectionName,
+  fieldToSearch,
+  valueToSearch,
+  newData
+) => {
+  try {
+    // Спочатку знаходимо документ за певною умовою
+    const q = query(
+      collection(db, collectionName),
+      where(fieldToSearch, "==", valueToSearch)
+    );
+    const querySnapshot = await getDocs(q);
 
-//       // Оновлення ім'я користувача в Firebase Auth
-//       await updateProfile(user, { photoUserURL: photoUrl });
+    // Перебираємо результати запиту
+    querySnapshot.forEach((document) => {
+      const documentId = document.id; // Отримуємо ID документа
+      console.log("Document ID:", documentId);
 
-//       return user;
-//     } catch (error) {
-//       throw error;
-//     }
-//   }
-// );
-
-// const uploadAvatar = async (storageRef, file) => {
-//   try {
-//     await uploadBytes(storageRef, file);
-//     const downloadURL = await getDownloadURL(storageRef);
-//     return downloadURL;
-//   } catch (error) {
-//     return "error";
-//   }
-// };
+      // Оновлюємо документ з отриманим ID і новими даними
+      const docRef = doc(db, collectionName, documentId);
+      updateDoc(docRef, newData);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 // !--------------------------------REGISTER --------------------------------
 
 export const registerUserThunk = createAsyncThunk(
   "auth/register",
   async ({ displayName, email, password, photoURL }, thunkAPI) => {
-    // let photoURL = null;
-    // let storageRef = null;
+    let userPhotoURL = "";
+    let storageRef = null;
     try {
-      // const user = await createUserWithEmailAndPassword(auth, email, password);
-      // if (photoUserURL) {
-      //   // const format = photoUserURL.data.name.slice(-3);
-      //   storageRef = ref(storage, `avatar/${Math.random()}`);
-      //   photoURL = await uploadAvatar(storageRef, photoUserURL);
-      // }
+      if (photoURL) {
+        const uniquePreffix = `${Date.now()}_${Math.round(
+          Math.random() * 1e9
+        )}`;
+        const format = photoURL.split(".").pop();
+        storageRef = ref(storage, `avatar/${uniquePreffix}.${format}`);
+        userPhotoURL = await uploadUserPhotoToStorage(storageRef, photoURL);
+      }
 
-      // if (photoUserURL === "error") {
-      //   return thunkAPI.rejectWithValue("error");
-      // }
-      // !=============================================================================
-      // const docRef = await addDoc(collection(db, "users"), {
-      //   id: user.uid,
-      //   displayName: user.displayName,
-      //   email: user.email,
-      //   photoURL: user.photoURL,
-      // });
-      // console.log("Document written with ID: ", docRef.id);
-      // !================================================================================================================================
+      if (userPhotoURL === "error") {
+        return thunkAPI.rejectWithValue("error");
+      }
 
-      // const photoRef = ref(storage, `users/${user.uid}/profile.jpg`);
-      // await uploadString(photoRef, photoUserURL, "data_url");
-
-      // // Отримайте публічний URL фотографії
-      // const photoURL = await getDownloadURL(photoRef);
-
-      // user {
-      //   "_redirectEventId": undefined,
-      //     "apiKey": "AIzaSyCCm1OwU7qSh-uUSP41bWH6FkCcIGa3tRQ",
-      //     "appName": "[DEFAULT]",
-      //     "createdAt": "1695325724087",
-      //     "displayName": "Eee",
-      //     "email": "eee@eee.eee",
-      //     "emailVerified": false,
-      //     "isAnonymous": false,
-      //     "lastLoginAt": "1695325724087",
-      //     "phoneNumber": undefined,
-      //     "photoURL": "file:///data/user/0/host.exp.exponent/cache/ImageManipulator/70253084-8180-4dfe-92b0-b8e2e096274c.jpg",
-      //     "providerData": [[Object]],
-      //     "stsTokenManager": { "accessToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImFhMDhlN2M3ODNkYjhjOGFjNGNhNzJhZjdmOWRkN2JiMzk4ZjE2ZGMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYXdlc29tZS1wcm9qZWN0LTM5ODMxNCIsImF1ZCI6ImF3ZXNvbWUtcHJvamVjdC0zOTgzMTQiLCJhdXRoX3RpbWUiOjE2OTUzMjU3MjQsInVzZXJfaWQiOiJPOE1Tb3hpUnRYYXVZRHNyOUNGMDNkS2tsZXMxIiwic3ViIjoiTzhNU294aVJ0WGF1WURzcjlDRjAzZEtrbGVzMSIsImlhdCI6MTY5NTMyNTcyNCwiZXhwIjoxNjk1MzI5MzI0LCJlbWFpbCI6ImVlZUBlZWUuZWVlIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImVlZUBlZWUuZWVlIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.QsCREUiyWGSQkM2YaEbhUPgVE4rV29h8Ek5TJIsirU8cIat2rbGqcUcqjcjjNEySIjR20q1gyKCv26DKdtCQERrIe4Ek0q7mPzRrl8gM8j_MggSy40CC7FIz_LtnIEZyeS7HbMd1i9YJF08Xv929tFMx5TS4A8OP3WIAhQS-kX5ErrPlEXstzJ0SsmHMlXc3abXwKfk9D8PzF3cZpVxtsxT_bby5OuZ42HUacq3IllTI_h49AGgkuuQg2nbykXJ7V29g65TGyukCjqSopsZi9DUysjoB6azvgFSUkmkIZ3_zuhUh4FLVg5FWOds2d-ZbwweORFg5W_6NQIJfyOUR5A", "expirationTime": 1695329322949, "refreshToken": "AMf-vBy1FdH-jVC30xGk8qlxo6HfXb5pkUDQq-O9-X4CYcnQbYL4P-os06LvvaQq_CZimcVXnc5I88lHINjNgkpPgPFKJtzN1uiEwpFgQI9EoVDxe8hFDMKxUvqwDPmsiJ03h8-IKnxI8xn-2gY727aTeQBDfZyTo0p_7kIDXur63cRPL94Fu8fP7cj3EcyYv0BEoxTfaU0EiNJeLTtc-cZCiUUTpTPcvw" },
-      //   "tenantId": undefined,
-      //     "uid": "O8MSoxiRtXauYDsr9CF03dKkles1"
-      // }
-
-      // !================================================================================================================================
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -122,9 +93,17 @@ export const registerUserThunk = createAsyncThunk(
 
       await updateProfile(user, {
         displayName,
-        photoURL,
+        photoURL: userPhotoURL,
       });
       console.log("user", user);
+
+      const docRef = await addDoc(collection(db, "users"), {
+        id: user.uid,
+        displayName,
+        email,
+        photoURL: userPhotoURL,
+      });
+      console.log("Користувач успішно доданий до Firestore з ID: ", docRef.id);
       return { displayName, email, photoURL };
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
@@ -164,6 +143,7 @@ export const loginUserThunk = createAsyncThunk(
       console.log("user", user);
       const { displayName, profilePicture } = user._tokenResponse;
       const photoURL = profilePicture;
+      console.log("photoURL:", photoURL);
       return { displayName, email, photoURL };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -205,57 +185,59 @@ export const logoutUserThunk = createAsyncThunk(
 
 export const addPhotoUserThunk = createAsyncThunk(
   "auth/addPhoto",
-  async (photoUrl) => {
+  async (photoURL, thunkAPI) => {
     try {
-      // Оновлення профілю користувача з фото
-      const user = auth.currentUser;
-      await updateProfile(user, { photoURL: photoUrl });
+      const uniquePreffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+      const format = photoURL.split(".").pop();
+      const storageRef = ref(storage, `avatar/${uniquePreffix}.${format}`);
+      const photoUserURL = await uploadUserPhotoToStorage(storageRef, photoURL);
+      console.log("Шлях до додаваного фото:", photoUserURL);
 
-      // Оновлення інформації в Firestore
-      const userDocRef = doc(db, "users", auth.currentUser.uid);
-      await updateDoc(userDocRef, {
-        photoURL: photoUrl,
+      if (photoUserURL === "error") {
+        return thunkAPI.rejectWithValue("error");
+      }
+
+      const user = auth.currentUser;
+      updateUserPhotoInFirestore("users", "email", user.email, {
+        photoURL: photoUserURL,
       });
 
-      return photoUrl;
+      await updateProfile(user, { photoURL: photoUserURL });
+      console.log("Оновлене значення ФотоURL користувача в Firestore.", user);
+
+      return photoURL;
     } catch (error) {
-      throw error;
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
 
 // !-------------------------------deletePhotoUser--------------------------------
 
-// export const deletePhotoUserThunk = createAsyncThunk(
-//   "auth/deletePhoto",
-//   async () => {
-//     try {
-//       // Оновлення профілю користувача без фото
-//       const user = auth.currentUser;
-//       await updateProfile(user, { photoURL: null });
-
-//       // Оновлення інформації в Firestore
-//       const userDocRef = doc(db, "users", auth.currentUser.uid);
-//       await updateDoc(userDocRef, {
-//         photoURL: null,
-//       });
-//     } catch (error) {
-//       throw error;
-//     }
-//   }
-// );
-
 export const deletePhotoUserThunk = createAsyncThunk(
   "auth/deletePhoto",
-  async (photoUrl, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const desertRef = ref(storage, photoUrl);
-      await deleteObject(desertRef);
+      // Видалення фото з Firebase Storage
+      const user = auth.currentUser;
+      updateUserPhotoInFirestore("users", "email", user.email, {
+        photoURL: "",
+      });
+      console.log(
+        "ФотоURL користувача оновлено до порожнього значення в Firestore."
+      );
 
+      console.log("Шлях до видаляємого фото:", user.photoURL);
+      const desertRef = ref(storage, user.photoURL);
+      await deleteObject(desertRef);
+      console.log("Фото успішно видалено.");
+
+      // Оновлення фотоURL користувача в Firebase Auth
       await updateProfile(auth.currentUser, {
         photoURL: "",
       });
     } catch (error) {
+      console.error("Помилка при видаленні фото:", error);
       return thunkAPI.rejectWithValue(error.message);
     }
   }

@@ -12,15 +12,15 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import UserPhoto from "../components/UserPhoto";
 import { useDispatch } from "react-redux";
 import { registerUserThunk } from "../redux/auth/authOperations";
+import UserPhotoCreate from "../components/UserPhotoCreate";
 
 const initialState = {
   email: "",
   password: "",
   displayName: "",
-  photoURL: null,
+  photoURL: "",
 };
 
 const RegistrationScreen = () => {
@@ -33,13 +33,6 @@ const RegistrationScreen = () => {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-
-  // const handlePhotoAdd = (photoAdded) => {
-  //   setState((prevValues) => ({
-  //     ...prevValues,
-  //     photo: photoAdded,
-  //   }));
-  // };
 
   const handlePhotoUrl = (url) => {
     setState((prevValues) => ({
@@ -85,16 +78,19 @@ const RegistrationScreen = () => {
 
     if (!state.displayName) {
       errors.displayName = "Логін обов'язковий";
+      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     }
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
+      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email) || state.email.length < 5) {
       errors.email = "Введіть дійсну електронну пошту";
     }
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
+      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (state.password.length < 6) {
       errors.password = "Довжина паролю повинна бути не менше 6 символів!";
     }
@@ -158,8 +154,7 @@ const RegistrationScreen = () => {
           source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
-            <UserPhoto
-              // handlePhotoAdd={handlePhotoAdd}
+            <UserPhotoCreate
               handlePhotoUrl={handlePhotoUrl}
             />
             {errorMessages.photo && (

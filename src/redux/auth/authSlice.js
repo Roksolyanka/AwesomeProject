@@ -12,7 +12,7 @@ const authInitialState = {
   userData: {
     displayName: null,
     email: null,
-    photoURL: null,
+    photoURL: "",
     password: null,
   },
   isLoading: false,
@@ -29,7 +29,7 @@ export const updateUser = (user) => ({
   payload: {
     displayName: user ? user.login : null,
     email: user ? user.email : null,
-    photoURL: user ? user.photoURL : null,
+    photoURL: user ? user.photoURL : "",
   },
 });
 
@@ -40,7 +40,7 @@ const authSlice = createSlice({
   // !--------------------------------UPDATE USER INFORMATION --------------------------------
 
   reducers: {
-    [updateUser.type]: (state, action) => {
+    updateUser: (state, action) => {
       state.userData = action.payload;
     },
   },
@@ -106,7 +106,12 @@ const authSlice = createSlice({
       })
       .addCase(logoutUserThunk.fulfilled, (state) => {
         state.isLoading = false;
-        state.userData = null;
+        state.userData = {
+          displayName: null,
+          email: null,
+          photoURL: "",
+          password: null,
+        };
       })
       .addCase(logoutUserThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -138,7 +143,7 @@ const authSlice = createSlice({
       .addCase(deletePhotoUserThunk.fulfilled, (state) => {
         state.isLoading = false;
         state.errorDeletePhotoUser = null;
-        state.userData.photoURL = null;
+        state.userData.photoURL = "";
       })
       .addCase(deletePhotoUserThunk.rejected, (state, action) => {
         state.isLoading = false;

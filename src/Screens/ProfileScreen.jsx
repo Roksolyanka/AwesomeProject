@@ -18,16 +18,11 @@ import { useDispatch } from "react-redux";
 import { useUser } from "../hooks/index.js";
 
 const ProfileScreen = () => {
-  const [photoAvatarAdded, setPhotoAvatarAdded] = useState(false);
   const { user } = useUser();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const route = useRoute();
   const { publicationData } = route.params || {};
-
-  const handlePhotoAdd = () => {
-    setPhotoAvatarAdded(!photoAvatarAdded);
-  };
 
   const publications = publicationData ? [...publicationData] : [];
 
@@ -39,10 +34,7 @@ const ProfileScreen = () => {
       >
         <SafeAreaView style={styles.safeContainer}>
           <View style={styles.profileContainer}>
-            <UserPhoto
-              photoAvatarAdded={photoAvatarAdded}
-              handlePhotoAdd={handlePhotoAdd}
-            />
+            <UserPhoto/>
             <TouchableOpacity
               onPress={() => {
                 dispatch(logoutUserThunk());
@@ -51,7 +43,7 @@ const ProfileScreen = () => {
             >
               <Feather name="log-out" size={24} style={styles.iconLogOut} />
             </TouchableOpacity>
-            <Text style={styles.name}>{user.displayName}</Text>
+            {user && <Text style={styles.name}>{user.displayName}</Text>}
             <FlatList
               data={publications}
               keyExtractor={(item, index) => index.toString()}

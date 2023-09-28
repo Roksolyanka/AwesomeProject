@@ -21,7 +21,13 @@ export default function MainNavigator() {
       if (user) {
         dispatch(updateUser(user));
       } else {
-        dispatch(updateUser(null));
+        dispatch(
+          updateUser({
+            displayName: null,
+            email: null,
+            photoURL: "", // Ось зміна - встановлюємо порожній рядок
+          })
+        );
       }
     });
   }, [dispatch]);

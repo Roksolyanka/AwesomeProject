@@ -92,7 +92,7 @@ const LoginScreen = () => {
         email: state.email,
         password: state.password,
       };
-      dispatch(loginUserThunk(state));
+      dispatch(loginUserThunk(loginData));
       console.log("Дані для входу:", loginData);
       Alert.alert(
         "Вхід успішний! Облікові дані:",
