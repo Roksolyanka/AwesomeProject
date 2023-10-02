@@ -20,19 +20,21 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
-import globalState from "./globalState";
 import * as Location from "expo-location";
 import Spinner from "react-native-loading-spinner-overlay";
+import { createPostThunk } from "../redux/posts/postOperations";
+import { useDispatch } from "react-redux";
+import { imageOptimization } from "../helpers/index";
 
 const initialState = {
   name: "",
   location: "",
   geolocation: "",
-  photo: false,
+  imageURL: "",
 };
 
 const CreatePostsScreen = () => {
-  const [inputValues, setInputValues] = useState(initialState);
+  const [state, setState] = useState(initialState);
   const [errorMessages, setErrorMessages] = useState({});
   const [isButtonActive, setIsButtonActive] = useState(false);
   const [cameraRef, setCameraRef] = useState(null);
@@ -40,13 +42,13 @@ const CreatePostsScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [waitingProcess, setWaitingProcess] = useState(false);
-
+  const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const updateButtonActivation = () => {
-    const isPhotoAdded = !!inputValues.photo;
-    const isNameFilled = !!inputValues.name;
-    const isLocationFilled = !!inputValues.location;
+    const isPhotoAdded = !!state.imageURL;
+    const isNameFilled = !!state.name;
+    const isLocationFilled = !!state.location;
     const hasErrors = Object.keys(errorMessages).length > 0;
 
     setIsButtonActive(
@@ -59,9 +61,9 @@ const CreatePostsScreen = () => {
   };
 
   const toggleCamera = () => {
-    setInputValues((prevState) => ({
+    setState((prevState) => ({
       ...prevState,
-      photo: !prevState.photo,
+      imageURL: !prevState.imageURL,
     }));
     setIsCameraActive(!isCameraActive);
   };
@@ -75,7 +77,7 @@ const CreatePostsScreen = () => {
     })();
     setIsCameraActive(true);
     updateButtonActivation();
-  }, [inputValues, errorMessages, isCameraActive]);
+  }, [state, errorMessages, isCameraActive]);
 
   if (hasPermission === null) {
     return <View />;
@@ -97,7 +99,9 @@ const CreatePostsScreen = () => {
     if (isCameraActive && cameraRef) {
       const { uri } = await cameraRef.takePictureAsync();
       await MediaLibrary.createAssetAsync(uri);
-      setInputValues((prevState) => ({ ...prevState, photo: uri }));
+       const optimizedImageUrl = await imageOptimization(uri);
+      setState((prevState) => ({ ...prevState, imageURL: optimizedImageUrl }));
+      console.log("URL оптимізованого зображення:", optimizedImageUrl);
       getCurrentLocation();
     }
     setWaitingProcess(false);
@@ -122,7 +126,7 @@ const CreatePostsScreen = () => {
       console.log(location);
       console.log(address);
 
-      setInputValues((prevState) => ({
+      setState((prevState) => ({
         ...prevState,
         geolocation: `${address[0].city}, ${address[0].region}, ${address[0].country}`,
       }));
@@ -134,15 +138,15 @@ const CreatePostsScreen = () => {
   const validateForm = () => {
     const errors = {};
 
-    if (!inputValues.photo) {
+    if (!state.imageURL) {
       errors.photo = "Фото обов'язкове";
     }
 
-    if (!inputValues.name) {
+    if (!state.name) {
       errors.name = "Назва обов'язкова";
     }
 
-    if (!inputValues.location) {
+    if (!state.location) {
       errors.location = "Місцезнаходження обов'язкове";
     }
 
@@ -152,25 +156,19 @@ const CreatePostsScreen = () => {
   };
 
   const clearPublicationForm = () => {
-    setInputValues(initialState);
+    setState(initialState);
   };
 
-  const handleCreatePublication = () => {
+  const handleCreatePost = () => {
     if (validateForm()) {
       const newPublication = {
-        name: inputValues.name,
-        location: inputValues.location,
-        geolocation: inputValues.geolocation,
-        photo: inputValues.photo,
+        name: state.name,
+        location: state.location,
+        geolocation: state.geolocation,
+        imageURL: state.imageURL,
       };
-      globalState.publications.push(newPublication);
-      navigation.navigate("Posts", {
-        publicationData: globalState.publications,
-      });
-      console.log("Publication data:", {
-        publicationData: globalState.publications,
-      });
-      console.log("Publication data length:", globalState.publications.length);
+      dispatch(createPostThunk(newPublication));
+      navigation.navigate("Posts");
       Alert.alert("Публікація успішно створена!");
     }
   };
@@ -187,10 +185,11 @@ const CreatePostsScreen = () => {
             <Text style={styles.errorMessage}>{errorMessages.photo}</Text>
           )}
           <View style={styles.photoContainer}>
-            {inputValues.photo ? (
+            {state.imageURL ? (
               <>
+                {console.log("змінна state.imageURL:", state.imageURL)}
                 <ImageBackground
-                  source={{ uri: inputValues.photo }}
+                  source={{ uri: state.imageURL }}
                   style={styles.photo}
                 >
                   <TouchableOpacity onPress={toggleCamera}>
@@ -245,11 +244,11 @@ const CreatePostsScreen = () => {
           )}
           <TextInput
             placeholder="Назва..."
-            value={inputValues.name}
+            value={state.name}
             style={styles.input}
             placeholderTextColor="#BDBDBD"
             onChangeText={(text) => {
-              setInputValues((prevState) => ({ ...prevState, name: text }));
+              setState((prevState) => ({ ...prevState, name: text }));
             }}
           />
           {errorMessages.location && (
@@ -263,11 +262,11 @@ const CreatePostsScreen = () => {
             />
             <TextInput
               placeholder="Місцевість..."
-              value={inputValues.location}
+              value={state.location}
               style={styles.locationInput}
               placeholderTextColor="#BDBDBD"
               onChangeText={(text) => {
-                setInputValues((prevState) => ({
+                setState((prevState) => ({
                   ...prevState,
                   location: text,
                 }));
@@ -277,7 +276,7 @@ const CreatePostsScreen = () => {
           <TouchableOpacity
             style={[styles.button, !isButtonActive && styles.inactiveButton]}
             onPress={() => {
-              handleCreatePublication();
+              handleCreatePost();
               clearPublicationForm();
             }}
             disabled={!isButtonActive}
@@ -298,25 +297,23 @@ const CreatePostsScreen = () => {
           }}
           style={[
             styles.iconContainer,
-            inputValues.photo ||
-            inputValues.name.length > 0 ||
-            inputValues.location.length > 0
+            state.imageURL || state.name.length > 0 || state.location.length > 0
               ? styles.iconContainerActive
               : styles.iconContainerInactive,
           ]}
           disabled={
-            !inputValues.photo &&
-            inputValues.name.length < 1 &&
-            inputValues.location.length < 1
+            !state.imageURL &&
+            state.name.length < 1 &&
+            state.location.length < 1
           }
         >
           <Feather
             name="trash-2"
             size={24}
             style={[
-              inputValues.photo ||
-              inputValues.name.length > 0 ||
-              inputValues.location.length > 0
+              state.imageURL ||
+              state.name.length > 0 ||
+              state.location.length > 0
                 ? styles.deleteIconActive
                 : styles.deleteIconInactive,
             ]}

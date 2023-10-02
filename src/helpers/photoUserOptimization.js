@@ -4,7 +4,7 @@ const imageOptimization = async (uri) => {
   try {
     const manipResult = await manipulateAsync(
       uri,
-      [{ resize: { height: 240 } }],
+      [{ resize: { width: 120, height: 120 } }],
       { compress: 0.5, format: SaveFormat.JPEG }
     );
     return manipResult.uri;

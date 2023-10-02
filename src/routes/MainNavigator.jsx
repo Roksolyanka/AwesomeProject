@@ -25,7 +25,7 @@ export default function MainNavigator() {
           updateUser({
             displayName: null,
             email: null,
-            photoURL: "", // Ось зміна - встановлюємо порожній рядок
+            photoURL: "",
           })
         );
       }

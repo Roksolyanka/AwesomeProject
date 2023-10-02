@@ -1,6 +1,6 @@
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,17 +8,43 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import globalState from "./globalState";
-import { useUser } from "../hooks/index";
+import { usePost, useUser } from "../hooks/index";
+import { useDispatch } from "react-redux";
+import { getAllPostsThunk } from "../redux/posts/postOperations";
 
 const PostsScreen = () => {
+  const [update, setUpdate] = useState(false);
+  const [hasRendered, setHasRendered] = useState(false);
   const navigation = useNavigation();
-  const route = useRoute();
-  const { publicationData } = route.params || {};
-  const publications = publicationData ? publicationData : [];
+  const dispatch = useDispatch();
   const { user } = useUser();
-  console.log("user.photoURL:", user.photoURL);
+  const { allPosts, errorGetAllPost, errorAddLike } = usePost();
+
+  useEffect(() => {
+    dispatch(getAllPostsThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if ((errorGetAllPost || errorAddLike) && hasRendered) {
+      console.error(error);
+    } else {
+      setHasRendered(true);
+    }
+  }, [errorGetAllPost]);
+
+  const fetchAllPosts = async () => {
+    setUpdate(true);
+    try {
+      await dispatch(getAllPostsThunk());
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+    setUpdate(false);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.userContainer}>
@@ -36,21 +62,27 @@ const PostsScreen = () => {
       </View>
 
       <FlatList
-        data={publications}
-        keyExtractor={(item, index) => index.toString()}
+        refreshControl={
+          <RefreshControl refreshing={update} onRefresh={fetchAllPosts} />
+        }
+        data={allPosts}
+        keyExtractor={(item) => (item.id ? item.id.toString() : "")}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.publicationsContainer}>
             <View style={styles.publicationContainer} key={item.name}>
-              <Image source={{ uri: item.photo }} style={styles.photo} />
+              {console.log("URL фотографії:", item.imageURL)}
+              {item.imageURL && (
+                <Image source={{ uri: item.imageURL }} style={styles.photo} />
+              )}
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {globalState.commentCounts[item.photo] !== undefined ? (
+                {globalState.commentCounts[item.imageURL] !== undefined ? (
                   <>
                     <TouchableOpacity
                       onPress={() => {
                         navigation.navigate("Comments", {
-                          photo: item.photo,
+                          photo: item.imageURL,
                         });
                       }}
                       style={styles.publicationCommentContainer}
@@ -61,7 +93,7 @@ const PostsScreen = () => {
                         style={styles.icon}
                       />
                       <Text style={styles.commentCount}>
-                        {globalState.commentCounts[item.photo]}
+                        {globalState.commentCounts[item.imageURL]}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -70,7 +102,7 @@ const PostsScreen = () => {
                     <TouchableOpacity
                       onPress={() => {
                         navigation.navigate("Comments", {
-                          photo: item.photo,
+                          photo: item.imageURL,
                         });
                       }}
                       style={styles.publicationCommentContainer}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Image,
@@ -8,23 +8,61 @@ import {
   Text,
   FlatList,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
 import globalState from "./globalState";
 import { logoutUserThunk } from "../redux/auth/authOperations";
 import { useDispatch } from "react-redux";
-import { useUser } from "../hooks/index.js";
+import { usePost, useUser } from "../hooks/index.js";
+import {
+  addLikeThunk,
+  deleteLikeThunk,
+  getMyPostThunk,
+} from "../redux/posts/postOperations";
+import { auth } from "../redux/config";
+import { updatePage } from "../helpers/index";
 
 const ProfileScreen = () => {
+  const [update, setUpdate] = useState(false);
   const { user } = useUser();
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const route = useRoute();
-  const { publicationData } = route.params || {};
+  const { myPosts } = usePost();
 
-  const publications = publicationData ? [...publicationData] : [];
+  useEffect(() => {
+    dispatch(getMyPostThunk());
+  }, [dispatch]);
+
+  const fetchMyPosts = async () => {
+    setUpdate(true);
+    try {
+      await dispatch(getMyPostThunk());
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+    setUpdate(false);
+  };
+
+  const addLike = async (id, likes) => {
+    const value = (likes += 1);
+    dispatch(addLikeThunk({ id, value }));
+
+    updatePage(id, () => {
+      dispatch(getMyPostThunk());
+    });
+  };
+
+  const deleteLike = async (id, likes) => {
+    const value = (likes -= 1);
+    dispatch(deleteLikeThunk({ id, value }));
+
+    updatePage(id, () => {
+      dispatch(getMyPostThunk());
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -34,7 +72,7 @@ const ProfileScreen = () => {
       >
         <SafeAreaView style={styles.safeContainer}>
           <View style={styles.profileContainer}>
-            <UserPhoto/>
+            <UserPhoto />
             <TouchableOpacity
               onPress={() => {
                 dispatch(logoutUserThunk());
@@ -45,22 +83,31 @@ const ProfileScreen = () => {
             </TouchableOpacity>
             {user && <Text style={styles.name}>{user.displayName}</Text>}
             <FlatList
-              data={publications}
-              keyExtractor={(item, index) => index.toString()}
+              refreshControl={
+                <RefreshControl refreshing={update} onRefresh={fetchMyPosts} />
+              }
+              data={myPosts}
+              keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <View style={styles.publicationsContainer}>
                   <View style={styles.publicationContainer} key={item.name}>
-                    <Image source={{ uri: item.photo }} style={styles.photo} />
+                    {item.imageURL ? (
+                      <Image
+                        source={{ uri: item.imageURL }}
+                        style={styles.photo}
+                      />
+                    ) : null}
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
-                        {globalState.commentCounts[item.photo] !== undefined ? (
+                        {globalState.commentCounts[item.imageURL] !==
+                        undefined ? (
                           <>
                             <TouchableOpacity
                               onPress={() => {
                                 navigation.navigate("Comments", {
-                                  photo: item.photo,
+                                  photo: item.imageURL,
                                 });
                               }}
                               style={styles.publicationCommentContainer}
@@ -71,7 +118,7 @@ const ProfileScreen = () => {
                                 style={styles.icon}
                               />
                               <Text style={styles.commentCount}>
-                                {globalState.commentCounts[item.photo]}
+                                {globalState.commentCounts[item.imageURL]}
                               </Text>
                             </TouchableOpacity>
                           </>
@@ -80,7 +127,7 @@ const ProfileScreen = () => {
                             <TouchableOpacity
                               onPress={() => {
                                 navigation.navigate("Comments", {
-                                  photo: item.photo,
+                                  photo: item.imageURL,
                                 });
                               }}
                               style={styles.publicationCommentContainer}
@@ -88,27 +135,44 @@ const ProfileScreen = () => {
                               <Ionicons
                                 name="chatbubble-outline"
                                 size={24}
-                                style={styles.iconWithoutComments}
+                                style={styles.iconGray}
                               />
-                              <Text
-                                style={[
-                                  styles.commentCount,
-                                  styles.commentCountZero,
-                                ]}
-                              >
+                              <Text style={[styles.count, styles.countZero]}>
                                 0
                               </Text>
                             </TouchableOpacity>
                           </>
                         )}
-                        <View style={styles.publicationLikeContainer}>
-                          <Feather
-                            name="thumbs-up"
-                            size={24}
-                            style={styles.icon}
-                          />
-                          <Text style={styles.likeCount}>153</Text>
-                        </View>
+                        {item.liked.some(
+                          (likedItem) =>
+                            likedItem.userId === auth.currentUser.uid
+                        ) ? (
+                          <TouchableOpacity
+                            onPress={() => deleteLike(item.id, item.likes)}
+                            style={styles.publicationLikeContainer}
+                          >
+                            <Feather
+                              name="thumbs-up"
+                              size={24}
+                              style={styles.icon}
+                            />
+                            <Text style={styles.count}>{item.likes}</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            onPress={() => addLike(item.id, item.likes)}
+                            style={styles.publicationLikeContainer}
+                          >
+                            <Feather
+                              name="thumbs-up"
+                              size={24}
+                              style={styles.iconGray}
+                            />
+                            <Text style={[styles.count, styles.countZero]}>
+                              {item.likes}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                       <TouchableOpacity
                         style={styles.publicationLocationContainer}
@@ -217,17 +281,17 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: "center",
   },
-  commentCount: {
+  count: {
     color: "#212121",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
   },
-  iconWithoutComments: {
+  iconGray: {
     color: "#BDBDBD",
   },
-  commentCountZero: {
+  countZero: {
     color: "#BDBDBD",
   },
   publicationLikeContainer: {

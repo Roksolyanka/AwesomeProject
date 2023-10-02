@@ -26,7 +26,10 @@ import {
 
 const uploadUserPhotoToStorage = async (storageRef, photoFile) => {
   try {
-    await uploadBytes(storageRef, photoFile);
+    const metadata = {
+      contentType: "image/jpeg",
+    };
+    await uploadBytes(storageRef, photoFile, metadata);
     const downloadURL = await getDownloadURL(storageRef);
     return downloadURL;
   } catch (error) {

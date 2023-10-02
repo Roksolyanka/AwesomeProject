@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { imageOptimization } from "../helpers/index";
+import { photoUserOptimization } from "../helpers/index";
 
 const UserPhotoCreate = ({ handlePhotoUrl }) => {
   const [image, setImage] = useState("");
@@ -25,7 +25,7 @@ const UserPhotoCreate = ({ handlePhotoUrl }) => {
       Alert.alert("Помилка вибору фото", "", [], { cancelable: true });
     } else {
       const firstAsset = result.assets[0];
-      const optimizedUri = await imageOptimization(firstAsset.uri);
+      const optimizedUri = await photoUserOptimization(firstAsset.uri);
       setImage(optimizedUri);
       handlePhotoUrl(optimizedUri);
     }
@@ -48,7 +48,7 @@ const UserPhotoCreate = ({ handlePhotoUrl }) => {
       });
     } else {
       const firstAsset = result.assets[0];
-      const optimizedUri = await imageOptimization(firstAsset.uri);
+      const optimizedUri = await photoUserOptimization(firstAsset.uri);
       setImage(optimizedUri);
       handlePhotoUrl(optimizedUri);
     }

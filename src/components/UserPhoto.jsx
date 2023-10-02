@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { imageOptimization } from "../helpers/index";
+import { photoUserOptimization } from "../helpers/index";
 import { useUser } from "../hooks/index";
 import { useDispatch } from "react-redux";
 import {
@@ -33,7 +33,7 @@ const UserPhoto = () => {
       Alert.alert("Помилка вибору фото", "", [], { cancelable: true });
     } else {
       const firstAsset = result.assets[0];
-      const optimizedUri = await imageOptimization(firstAsset.uri);
+      const optimizedUri = await photoUserOptimization(firstAsset.uri);
       setImage(optimizedUri);
       user.photoURL = optimizedUri;
       // handlePhotoUrl(optimizedUri);
@@ -58,7 +58,7 @@ const UserPhoto = () => {
       });
     } else {
       const firstAsset = result.assets[0];
-      const optimizedUri = await imageOptimization(firstAsset.uri);
+      const optimizedUri = await photoUserOptimization(firstAsset.uri);
       setImage(optimizedUri);
       user.photoURL = optimizedUri;
       dispatch(addPhotoUserThunk(optimizedUri));
