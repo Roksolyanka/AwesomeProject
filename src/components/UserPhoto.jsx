@@ -36,7 +36,6 @@ const UserPhoto = () => {
       const optimizedUri = await photoUserOptimization(firstAsset.uri);
       setImage(optimizedUri);
       user.photoURL = optimizedUri;
-      // handlePhotoUrl(optimizedUri);
       dispatch(addPhotoUserThunk(optimizedUri));
     }
   };

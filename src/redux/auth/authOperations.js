@@ -17,25 +17,9 @@ import {
   where,
 } from "firebase/firestore";
 import { ToastAndroid } from "react-native";
-import {
-  uploadBytes,
-  getDownloadURL,
-  ref,
-  deleteObject,
-} from "firebase/storage";
-
-const uploadUserPhotoToStorage = async (storageRef, photoFile) => {
-  try {
-    const metadata = {
-      contentType: "image/jpeg",
-    };
-    await uploadBytes(storageRef, photoFile, metadata);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error) {
-    throw error;
-  }
-};
+import { ref, deleteObject } from "firebase/storage";
+import { uriToBlob } from "../../helpers/index";
+import { uploadToStorage } from "../../firebase/index";
 
 const updateUserPhotoInFirestore = async (
   collectionName,
@@ -74,12 +58,13 @@ export const registerUserThunk = createAsyncThunk(
     let storageRef = null;
     try {
       if (photoURL) {
+        const blob = await uriToBlob(photoURL);
         const uniquePreffix = `${Date.now()}_${Math.round(
           Math.random() * 1e9
         )}`;
         const format = photoURL.split(".").pop();
         storageRef = ref(storage, `avatar/${uniquePreffix}.${format}`);
-        userPhotoURL = await uploadUserPhotoToStorage(storageRef, photoURL);
+        userPhotoURL = await uploadToStorage(storageRef, blob);
       }
 
       if (userPhotoURL === "error") {
@@ -190,22 +175,23 @@ export const addPhotoUserThunk = createAsyncThunk(
   "auth/addPhoto",
   async (photoURL, thunkAPI) => {
     try {
+      const blob = await uriToBlob(photoURL);
       const uniquePreffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
       const format = photoURL.split(".").pop();
       const storageRef = ref(storage, `avatar/${uniquePreffix}.${format}`);
-      const photoUserURL = await uploadUserPhotoToStorage(storageRef, photoURL);
-      console.log("Шлях до додаваного фото:", photoUserURL);
+      const newUserPhotoURL = await uploadToStorage(storageRef, blob);
+      console.log("Шлях до додаваного фото:", newUserPhotoURL);
 
-      if (photoUserURL === "error") {
+      if (newUserPhotoURL === "error") {
         return thunkAPI.rejectWithValue("error");
       }
 
       const user = auth.currentUser;
       updateUserPhotoInFirestore("users", "email", user.email, {
-        photoURL: photoUserURL,
+        photoURL: newUserPhotoURL,
       });
 
-      await updateProfile(user, { photoURL: photoUserURL });
+      await updateProfile(user, { photoURL: newUserPhotoURL });
       console.log("Оновлене значення ФотоURL користувача в Firestore.", user);
 
       return photoURL;

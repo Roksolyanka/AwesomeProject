@@ -13,20 +13,8 @@ import {
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { auth, db, storage } from "../config";
 import "react-native-get-random-values";
-
-export const uploadPostsImageToStorage = async (storageRef, photoFile) => {
-  try {
-    const metadata = {
-      contentType: "image/jpeg",
-    };
-    await uploadBytes(storageRef, photoFile, metadata);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error) {
-    console.log("uploadPosts", error);
-    return error;
-  }
-};
+import { uriToBlob } from "../../helpers/index";
+import { uploadToStorage } from "../../firebase/index";
 
 // !--------------------------------CREATE POST --------------------------------
 
@@ -34,13 +22,11 @@ export const createPostThunk = createAsyncThunk(
   "post/create",
   async ({ name, location, geolocation, imageURL }, thunkAPI) => {
     try {
+      const blob = await uriToBlob(imageURL);
       const uniquePreffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
       const format = imageURL.split(".").pop();
       const storageRef = ref(storage, `posts/${uniquePreffix}.${format}`);
-      const postImageURL = await uploadPostsImageToStorage(
-        storageRef,
-        imageURL
-      );
+      const postImageURL = await uploadToStorage(storageRef, blob);
 
       console.log("postImageURL:", postImageURL);
 

@@ -74,33 +74,33 @@ const UserPhotoCreate = ({ handlePhotoUrl }) => {
   return (
     <View style={styles.avatarContainer}>
       {image ? (
-        <ImageBackground source={{ uri: image }} style={styles.avatar}>
-          <TouchableOpacity
-            onPress={() => {
-              clearPhotoUser();
-            }}
-          >
+        <TouchableOpacity
+          onPress={() => {
+            clearPhotoUser();
+          }}
+        >
+          <ImageBackground source={{ uri: image }} style={styles.avatar}>
             <AntDesign
               style={styles.iconWithPhoto}
               name="closecircleo"
               size={25}
             />
-          </TouchableOpacity>
-        </ImageBackground>
+          </ImageBackground>
+        </TouchableOpacity>
       ) : (
-        <View style={styles.withoutAvatar}>
-          <TouchableOpacity
-            onPress={() => {
-              getPhotoNotification();
-            }}
-          >
+        <TouchableOpacity
+          onPress={() => {
+            getPhotoNotification();
+          }}
+        >
+          <View style={styles.withoutAvatar}>
             <AntDesign
               style={styles.iconWithoutPhoto}
               name="pluscircleo"
               size={25}
             />
-          </TouchableOpacity>
-        </View>
+          </View>
+        </TouchableOpacity>
       )}
     </View>
   );
