@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import {
   selectAllPosts,
-  selectDataComment,
+  selectComments,
   selectErrorAddComment,
   selectErrorAddLike,
   selectErrorCreatePost,
@@ -15,7 +15,7 @@ import {
 const usePost = () => {
   const myPosts = useSelector(selectMyPosts);
   const allPosts = useSelector(selectAllPosts);
-  const dataComment = useSelector(selectDataComment);
+  const comments = useSelector(selectComments);
   const isLoading = useSelector(selectIsloading);
   const errorCreatePost = useSelector(selectErrorCreatePost);
   const errorGetPost = useSelector(selectErrorGetPost);
@@ -29,7 +29,7 @@ const usePost = () => {
   return {
     myPosts,
     allPosts,
-    dataComment,
+    comments,
     isLoading,
     errorCreatePost,
     errorGetPost,

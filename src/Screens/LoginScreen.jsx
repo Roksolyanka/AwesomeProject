@@ -15,6 +15,9 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { loginUserThunk } from "../redux/auth/authOperations";
+import { userVerification } from "../firebase/index";
+import { auth } from "../redux/config";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const initialState = {
   email: "",
@@ -57,19 +60,30 @@ const LoginScreen = () => {
     setPasswordFocused(false);
   };
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const errors = {};
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-       ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
+      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email)) {
       errors.email = "Введіть дійсну електронну пошту";
+    } else {
+      const userExists = await userVerification(state.email);
+      if (!userExists) {
+        errors.email = "Користувач з такою електронною адресою не існує!";
+      }
     }
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
       ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
+    } else {
+      try {
+        await signInWithEmailAndPassword(auth, state.email, state.password);
+      } catch (error) {
+        errors.password = "Невірний пароль";
+      }
     }
 
     setErrorMessages(errors);
@@ -86,14 +100,13 @@ const LoginScreen = () => {
     setState(initialState);
   };
 
-  const handleLogin = () => {
-    if (validateForm()) {
+  const handleLogin = async () => {
+    if (await validateForm()) {
       const loginData = {
         email: state.email,
         password: state.password,
       };
       dispatch(loginUserThunk(loginData));
-      console.log("Дані для входу:", loginData);
       Alert.alert(
         "Вхід успішний! Облікові дані:",
         `${state.email} + ${state.password}`,

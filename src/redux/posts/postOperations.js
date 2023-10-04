@@ -1,4 +1,4 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref } from "firebase/storage";
 import {
   collection,
   addDoc,
@@ -28,8 +28,6 @@ export const createPostThunk = createAsyncThunk(
       const storageRef = ref(storage, `posts/${uniquePreffix}.${format}`);
       const postImageURL = await uploadToStorage(storageRef, blob);
 
-      console.log("postImageURL:", postImageURL);
-
       if (postImageURL === "error") {
         return thunkAPI.rejectWithValue("error");
       }
@@ -57,7 +55,7 @@ export const createPostThunk = createAsyncThunk(
 // !--------------------------------MY POSTS--------------------------------------
 
 export const getMyPostThunk = createAsyncThunk(
-  "post/get",
+  "myPosts/get",
   async (_, thunkAPI) => {
     try {
       const { uid } = auth.currentUser;
@@ -139,3 +137,48 @@ export const deleteLikeThunk = createAsyncThunk(
     }
   }
 );
+
+// !------------------------------------ADD COMMENT---------------------------
+
+export const addCommentThunk = createAsyncThunk(
+  "post/addComment",
+  async ({ newComment, id, formattedDate }, thunkAPI) => {
+    try {
+      const collectionRef = collection(db, "posts");
+      const docRef = doc(collectionRef, id);
+      await updateDoc(docRef, {
+        comments: arrayUnion({
+          id: `${Date.now()}_${Math.round(Math.random() * 1e9)}`,
+          text: newComment,
+          userId: auth.currentUser.uid,
+          userURL: auth.currentUser.photoURL,
+          dataTime: formattedDate,
+        }),
+      });
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+// !------------------------------------GET COMMENT---------------------------
+
+export const getCommentThunk = createAsyncThunk(
+"post/getComment",
+  async (id, thunkAPI) => {
+    try {
+      let comments;
+      const q = query(collection(db, "posts"), where("id", "==", id));
+
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc) => {
+        comments = doc.data().comments;
+      });
+
+      return comments;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+)

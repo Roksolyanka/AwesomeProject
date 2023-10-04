@@ -79,10 +79,9 @@ const UserPhoto = () => {
 
   const clearPhotoUser = () => {
     if (user && user.photoURL) {
-      dispatch(deletePhotoUserThunk(user.photoURL));
+      dispatch(deletePhotoUserThunk());
       setImage("");
       user.photoURL = "";
-      console.log("Фото успішно видалено:", user.photoURL);
     }
   };
 

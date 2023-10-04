@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,18 +9,44 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
-  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
-import { updateCommentCount } from "./globalState";
+import { usePost, useUser } from "../hooks/index";
+import {
+  addCommentThunk,
+  getCommentThunk,
+} from "../redux/posts/postOperations";
+import { FlatList } from "react-native-gesture-handler";
+import { useDispatch } from "react-redux";
+import { auth } from "../redux/config";
+import { RefreshControl } from "react-native";
+import { updatePage } from "../helpers/index";
 
 const CommentsScreen = () => {
-  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [update, setUpdate] = useState(false);
+  const { user } = useUser();
+  const { comments } = usePost();
+  const dispatch = useDispatch();
+  const reversedComments = [...comments].reverse();
 
   const route = useRoute();
-  const { photo } = route.params || {};
+  const { post } = route.params || {};
+
+  useEffect(() => {
+    dispatch(getCommentThunk(post.id));
+  }, [dispatch]);
+
+  const fetchComments = async () => {
+    setUpdate(true);
+    try {
+      await dispatch(getCommentThunk(post.id));
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+    setUpdate(false);
+  };
 
   const formatCommentDate = (date) => {
     const formattedDate = new Date(date).toLocaleDateString("uk-UA", {
@@ -42,18 +68,12 @@ const CommentsScreen = () => {
     if (newComment) {
       const currentDate = new Date().toISOString();
       const formattedDate = formatCommentDate(currentDate);
-
-      const updatedComments = [
-        ...comments,
-        { text: newComment, date: formattedDate },
-      ];
-
-      setComments(updatedComments);
+      const { id } = post;
+      dispatch(addCommentThunk({ newComment, id, formattedDate }));
       setNewComment("");
-      console.log(updatedComments);
-      console.log(updatedComments.length);
-      const publicationId = photo;
-      updateCommentCount(publicationId, updatedComments.length);
+      updatePage(id, () => {
+        dispatch(getCommentThunk(id));
+      });
     }
   };
 
@@ -65,22 +85,66 @@ const CommentsScreen = () => {
         keyboardVerticalOffset={-120}
       >
         <View style={styles.photoContainer}>
-          <Image source={{ uri: photo }} style={styles.photo} />
+          <Image source={{ uri: post.imageURL }} style={styles.photo} />
         </View>
-        <ScrollView style={styles.commentsContainer}>
-          {comments.map((comment, index) => (
-            <View key={index} style={styles.commentItem}>
-              <Image
-                source={require("../assets/images/avatar.png")}
-                style={styles.commentatorPhoto}
-              />
-              <View style={styles.commentContainer}>
-                <Text style={styles.commentText}>{comment.text}</Text>
-                <Text style={styles.commentDate}>{comment.date}</Text>
+        <View style={styles.commentsContainer}>
+          <FlatList
+            data={reversedComments}
+            refreshControl={
+              <RefreshControl refreshing={update} onRefresh={fetchComments} />
+            }
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View
+                style={[
+                  styles.commentItem,
+                  item.userId === auth.currentUser.uid && {
+                    flexDirection: "row-reverse",
+                  },
+                ]}
+              >
+                {item.userId === auth.currentUser.uid ? (
+                  user && user.photoURL ? (
+                    <Image
+                      source={{ uri: user.photoURL }}
+                      style={styles.commentatorPhoto}
+                    />
+                  ) : (
+                    <View style={styles.withoutAvatar}></View>
+                  )
+                ) : item.userURL ? (
+                  <Image
+                    source={{ uri: item.userURL }}
+                    style={styles.commentatorPhoto}
+                  />
+                ) : (
+                  <View style={styles.withoutAvatar}></View>
+                )}
+                <View
+                  style={[
+                    styles.commentContainer,
+                    item.userId === auth.currentUser.uid
+                      ? { borderTopLeftRadius: 6 }
+                      : { borderTopRightRadius: 6 },
+                  ]}
+                >
+                  <Text style={styles.commentText}>{item.text}</Text>
+                  <Text
+                    style={[
+                      styles.commentDate,
+                      item.userId === auth.currentUser.uid
+                        ? { marginRight: "auto" }
+                        : { marginLeft: "auto" },
+                    ]}
+                  >
+                    {item.dataTime}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </ScrollView>
+            )}
+          />
+        </View>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.commentInput}
@@ -134,6 +198,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 28,
+  },
+  withoutAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 28,
+    backgroundColor: "#E8E8E8",
   },
   commentContainer: {
     flex: 1,

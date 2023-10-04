@@ -7,47 +7,14 @@ import {
 } from "firebase/auth";
 import { auth, db, storage } from "../config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { addDoc, collection } from "firebase/firestore";
 import { ToastAndroid } from "react-native";
 import { ref, deleteObject } from "firebase/storage";
 import { uriToBlob } from "../../helpers/index";
-import { uploadToStorage } from "../../firebase/index";
-
-const updateUserPhotoInFirestore = async (
-  collectionName,
-  fieldToSearch,
-  valueToSearch,
-  newData
-) => {
-  try {
-    // Спочатку знаходимо документ за певною умовою
-    const q = query(
-      collection(db, collectionName),
-      where(fieldToSearch, "==", valueToSearch)
-    );
-    const querySnapshot = await getDocs(q);
-
-    // Перебираємо результати запиту
-    querySnapshot.forEach((document) => {
-      const documentId = document.id; // Отримуємо ID документа
-      console.log("Document ID:", documentId);
-
-      // Оновлюємо документ з отриманим ID і новими даними
-      const docRef = doc(db, collectionName, documentId);
-      updateDoc(docRef, newData);
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+import {
+  updateUserPhotoInFirestore,
+  uploadToStorage,
+} from "../../firebase/index";
 
 // !--------------------------------REGISTER --------------------------------
 
@@ -83,7 +50,6 @@ export const registerUserThunk = createAsyncThunk(
         displayName,
         photoURL: userPhotoURL,
       });
-      console.log("user", user);
 
       const docRef = await addDoc(collection(db, "users"), {
         id: user.uid,
@@ -95,17 +61,14 @@ export const registerUserThunk = createAsyncThunk(
       return { displayName, email, photoURL };
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
-        console.log("Користувач з таким емейлом вже існує.");
         ToastAndroid.show(
           "Користувач з такою електронною адресою вже існує",
           2500
         );
       } else if (error.code === "auth/invalid-email") {
-        console.log("That email address is invalid!");
         ToastAndroid.show("Ця електронна адреса недійсна!", 2500);
       }
-      console.error(error);
-      console.log("error.message", error.message);
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
@@ -126,14 +89,20 @@ export const loginUserThunk = createAsyncThunk(
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
       if (!user) {
-        throw HttpError(401, "Email or password is wrong");
+        return HttpError(401, "Email or password is wrong");
       }
-      console.log("user", user);
       const { displayName, profilePicture } = user._tokenResponse;
       const photoURL = profilePicture;
-      console.log("photoURL:", photoURL);
       return { displayName, email, photoURL };
     } catch (error) {
+      if (error.code === "auth/wrong-password") {
+        ToastAndroid.show("Невірний пароль!", 2500);
+      } else if (error.code === "auth/user-not-found") {
+        ToastAndroid.show(
+          "Користувача з вказаною електронною адресою не існує!",
+          2500
+        );
+      }
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -180,7 +149,6 @@ export const addPhotoUserThunk = createAsyncThunk(
       const format = photoURL.split(".").pop();
       const storageRef = ref(storage, `avatar/${uniquePreffix}.${format}`);
       const newUserPhotoURL = await uploadToStorage(storageRef, blob);
-      console.log("Шлях до додаваного фото:", newUserPhotoURL);
 
       if (newUserPhotoURL === "error") {
         return thunkAPI.rejectWithValue("error");
@@ -192,7 +160,6 @@ export const addPhotoUserThunk = createAsyncThunk(
       });
 
       await updateProfile(user, { photoURL: newUserPhotoURL });
-      console.log("Оновлене значення ФотоURL користувача в Firestore.", user);
 
       return photoURL;
     } catch (error) {
@@ -212,14 +179,9 @@ export const deletePhotoUserThunk = createAsyncThunk(
       updateUserPhotoInFirestore("users", "email", user.email, {
         photoURL: "",
       });
-      console.log(
-        "ФотоURL користувача оновлено до порожнього значення в Firestore."
-      );
 
-      console.log("Шлях до видаляємого фото:", user.photoURL);
       const desertRef = ref(storage, user.photoURL);
       await deleteObject(desertRef);
-      console.log("Фото успішно видалено.");
 
       // Оновлення фотоURL користувача в Firebase Auth
       await updateProfile(auth.currentUser, {

@@ -10,30 +10,21 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import globalState from "./globalState";
 import { usePost, useUser } from "../hooks/index";
 import { useDispatch } from "react-redux";
 import { getAllPostsThunk } from "../redux/posts/postOperations";
+import { auth } from "../redux/config";
 
 const PostsScreen = () => {
   const [update, setUpdate] = useState(false);
-  const [hasRendered, setHasRendered] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { user } = useUser();
-  const { allPosts, errorGetAllPost, errorAddLike } = usePost();
+  const { allPosts } = usePost();
 
   useEffect(() => {
     dispatch(getAllPostsThunk());
   }, [dispatch]);
-
-  useEffect(() => {
-    if ((errorGetAllPost || errorAddLike) && hasRendered) {
-      console.error(error);
-    } else {
-      setHasRendered(true);
-    }
-  }, [errorGetAllPost]);
 
   const fetchAllPosts = async () => {
     setUpdate(true);
@@ -44,6 +35,8 @@ const PostsScreen = () => {
     }
     setUpdate(false);
   };
+
+  const uid = auth.currentUser ? auth.currentUser.uid : null;
 
   return (
     <View style={styles.container}>
@@ -71,18 +64,19 @@ const PostsScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.publicationsContainer}>
             <View style={styles.publicationContainer} key={item.name}>
-              {console.log("URL фотографії:", item.imageURL)}
               {item.imageURL && (
                 <Image source={{ uri: item.imageURL }} style={styles.photo} />
               )}
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {globalState.commentCounts[item.imageURL] !== undefined ? (
+                {item.comments.some(
+                  (commentsItem) => commentsItem.userId === uid
+                ) ? (
                   <>
                     <TouchableOpacity
                       onPress={() => {
                         navigation.navigate("Comments", {
-                          photo: item.imageURL,
+                          post: item,
                         });
                       }}
                       style={styles.publicationCommentContainer}
@@ -93,7 +87,7 @@ const PostsScreen = () => {
                         style={styles.icon}
                       />
                       <Text style={styles.commentCount}>
-                        {globalState.commentCounts[item.imageURL]}
+                        {item.comments.length}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -102,7 +96,7 @@ const PostsScreen = () => {
                     <TouchableOpacity
                       onPress={() => {
                         navigation.navigate("Comments", {
-                          photo: item.imageURL,
+                          post: item,
                         });
                       }}
                       style={styles.publicationCommentContainer}
@@ -110,12 +104,19 @@ const PostsScreen = () => {
                       <Ionicons
                         name="chatbubble-outline"
                         size={24}
-                        style={styles.iconWithoutComments}
+                        style={[
+                          styles.icon,
+                          item.comments.length === 0 &&
+                            styles.iconWithoutComments,
+                        ]}
                       />
                       <Text
-                        style={[styles.commentCount, styles.commentCountZero]}
+                        style={[
+                          styles.commentCount,
+                          item.comments.length === 0 && styles.commentCountZero,
+                        ]}
                       >
-                        0
+                        {item.comments.length}
                       </Text>
                     </TouchableOpacity>
                   </>

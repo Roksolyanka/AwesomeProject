@@ -1,6 +1,6 @@
 export const selectMyPosts = (state) => state.posts.myPosts;
 export const selectAllPosts = (state) => state.posts.allPosts;
-export const selectDataComment = (state) => state.posts.dataComment;
+export const selectComments = (state) => state.posts.comments;
 export const selectIsloading = (state) => state.posts.isLoading;
 export const selectErrorCreatePost = (state) => state.posts.errorCreatePost;
 export const selectErrorGetPost = (state) => state.posts.errorGetPost;

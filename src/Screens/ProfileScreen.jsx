@@ -13,7 +13,6 @@ import {
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
-import globalState from "./globalState";
 import { logoutUserThunk } from "../redux/auth/authOperations";
 import { useDispatch } from "react-redux";
 import { usePost, useUser } from "../hooks/index.js";
@@ -64,6 +63,8 @@ const ProfileScreen = () => {
     });
   };
 
+  const uid = auth.currentUser ? auth.currentUser.uid : null;
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -74,8 +75,8 @@ const ProfileScreen = () => {
           <View style={styles.profileContainer}>
             <UserPhoto />
             <TouchableOpacity
-              onPress={() => {
-                dispatch(logoutUserThunk());
+              onPress={async () => {
+                await dispatch(logoutUserThunk());
                 navigation.navigate("Login");
               }}
             >
@@ -101,13 +102,14 @@ const ProfileScreen = () => {
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
-                        {globalState.commentCounts[item.imageURL] !==
-                        undefined ? (
+                        {item.comments.some(
+                          (commentsItem) => commentsItem.userId === uid
+                        ) ? (
                           <>
                             <TouchableOpacity
                               onPress={() => {
                                 navigation.navigate("Comments", {
-                                  photo: item.imageURL,
+                                  post: item,
                                 });
                               }}
                               style={styles.publicationCommentContainer}
@@ -118,7 +120,7 @@ const ProfileScreen = () => {
                                 style={styles.icon}
                               />
                               <Text style={styles.commentCount}>
-                                {globalState.commentCounts[item.imageURL]}
+                                {item.comments.length}
                               </Text>
                             </TouchableOpacity>
                           </>
@@ -127,7 +129,7 @@ const ProfileScreen = () => {
                             <TouchableOpacity
                               onPress={() => {
                                 navigation.navigate("Comments", {
-                                  photo: item.imageURL,
+                                  post: item,
                                 });
                               }}
                               style={styles.publicationCommentContainer}
@@ -135,17 +137,26 @@ const ProfileScreen = () => {
                               <Ionicons
                                 name="chatbubble-outline"
                                 size={24}
-                                style={styles.iconGray}
+                                style={[
+                                  styles.icon,
+                                  item.comments.length === 0 && styles.iconGray,
+                                ]}
                               />
-                              <Text style={[styles.count, styles.countZero]}>
-                                0
+                              <Text
+                                style={[
+                                  styles.count,
+                                  item.comments.length === 0 &&
+                                    styles.countZero,
+                                ]}
+                              >
+                                {item.comments.length}
                               </Text>
                             </TouchableOpacity>
                           </>
                         )}
                         {item.liked.some(
                           (likedItem) =>
-                            likedItem.userId === auth.currentUser.uid
+                            likedItem.userId === uid
                         ) ? (
                           <TouchableOpacity
                             onPress={() => deleteLike(item.id, item.likes)}

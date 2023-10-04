@@ -10,11 +10,13 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
+  ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { registerUserThunk } from "../redux/auth/authOperations";
 import UserPhotoCreate from "../components/UserPhotoCreate";
+import { userVerification } from "../firebase/index";
 
 const initialState = {
   email: "",
@@ -70,7 +72,7 @@ const RegistrationScreen = () => {
     setPasswordFocused(false);
   };
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const errors = {};
     if (!state.photoURL) {
       errors.photo = "Фотографія обов'язкова";
@@ -86,6 +88,11 @@ const RegistrationScreen = () => {
       ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email) || state.email.length < 5) {
       errors.email = "Введіть дійсну електронну пошту";
+    } else {
+      const userExists = await userVerification(state.email);
+      if (userExists) {
+        errors.email = "Користувач з такою електронною адресою вже існує!";
+      }
     }
 
     if (!state.password) {
@@ -109,8 +116,8 @@ const RegistrationScreen = () => {
     setState(initialState);
   };
 
-  const handleRegistration = () => {
-    if (validateForm()) {
+  const handleRegistration = async () => {
+    if (await validateForm()) {
       const registrationData = {
         displayName: state.displayName,
         email: state.email,
@@ -118,7 +125,6 @@ const RegistrationScreen = () => {
         photoURL: state.photoURL,
       };
       dispatch(registerUserThunk(registrationData));
-      console.log("Реєстраційні дані:", registrationData);
       Alert.alert(
         "Реєстрація успішна! Облікові дані:",
         `${state.displayName} + ${state.email} + ${state.password}`,
@@ -154,9 +160,7 @@ const RegistrationScreen = () => {
           source={require("../assets/images/photobg.png")}
         >
           <View style={styles.formContainer}>
-            <UserPhotoCreate
-              handlePhotoUrl={handlePhotoUrl}
-            />
+            <UserPhotoCreate handlePhotoUrl={handlePhotoUrl} />
             {errorMessages.photo && (
               <Text style={styles.errorMessagePhoto}>
                 {errorMessages.photo}

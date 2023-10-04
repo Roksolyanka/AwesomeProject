@@ -101,7 +101,6 @@ const CreatePostsScreen = () => {
       await MediaLibrary.createAssetAsync(uri);
        const optimizedImageUrl = await imageOptimization(uri);
       setState((prevState) => ({ ...prevState, imageURL: optimizedImageUrl }));
-      console.log("URL оптимізованого зображення:", optimizedImageUrl);
       getCurrentLocation();
     }
     setWaitingProcess(false);
@@ -112,7 +111,7 @@ const CreatePostsScreen = () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permission to access location was denied");
+        console.log("У доступі до місцезнаходження відмовлено");
         return;
       }
 
@@ -122,9 +121,6 @@ const CreatePostsScreen = () => {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       };
-
-      console.log(location);
-      console.log(address);
 
       setState((prevState) => ({
         ...prevState,
@@ -187,7 +183,6 @@ const CreatePostsScreen = () => {
           <View style={styles.photoContainer}>
             {state.imageURL ? (
               <>
-                {console.log("змінна state.imageURL:", state.imageURL)}
                 <ImageBackground
                   source={{ uri: state.imageURL }}
                   style={styles.photo}

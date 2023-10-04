@@ -11,7 +11,7 @@ import {
 const postInitialState = {
   myPosts: [],
   allPosts: [],
-  dataComment: [],
+  comments: [],
   isLoading: false,
   errorCreatePost: null,
   errorGetMyPost: null,
@@ -74,21 +74,6 @@ const postSlice = createSlice({
         state.errorGetAllPosts = action.payload;
       })
 
-      // !--------------------------------ADD COMMENT --------------------------------
-
-      // .addCase(addCommentThunk.pending, (state) => {
-      //   state.isLoading = true;
-      //   state.errorAddComment = null;
-      // })
-      // .addCase(addCommentThunk.fulfilled, (state) => {
-      //   state.isLoading = false;
-      //   state.errorAddComment = null;
-      // })
-      // .addCase(addCommentThunk.rejected, (state, action) => {
-      //   state.isLoading = false;
-      //   state.errorAddComment = action.payload;
-      // })
-
       // !--------------------------------ADD LIKE --------------------------------
 
       .addCase(addLikeThunk.pending, (state) => {
@@ -104,21 +89,36 @@ const postSlice = createSlice({
         state.errorAddLike = action.payload;
       })
 
+      // !--------------------------------ADD COMMENT --------------------------------
+
+      .addCase(addCommentThunk.pending, (state) => {
+        state.isLoading = true;
+        state.errorAddComment = null;
+      })
+      .addCase(addCommentThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.errorAddComment = null;
+      })
+      .addCase(addCommentThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorAddComment = action.payload;
+      })
+
       // !--------------------------------GET COMMENT --------------------------------
 
-      // .addCase(getCommentThunk.pending, (state) => {
-      //   state.isLoading = true;
-      //   state.errorGetCommentForCurrentPost = null;
-      // })
-      // .addCase(getCommentThunk.fulfilled, (state, action) => {
-      //   state.dataComment = action.payload;
-      //   state.isLoading = false;
-      //   state.errorGetCommentForCurrentPost = null;
-      // })
-      // .addCase(getCommentThunk.rejected, (state, action) => {
-      //   state.isLoading = false;
-      //   state.errorGetCommentForCurrentPost = action.payload;
-      // });
+      .addCase(getCommentThunk.pending, (state) => {
+        state.isLoading = true;
+        state.errorGetCommentForCurrentPost = null;
+      })
+      .addCase(getCommentThunk.fulfilled, (state, action) => {
+        state.comments = action.payload;
+        state.isLoading = false;
+        state.errorGetCommentForCurrentPost = null;
+      })
+      .addCase(getCommentThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorGetCommentForCurrentPost = action.payload;
+      });
   },
 });
 

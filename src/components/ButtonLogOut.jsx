@@ -9,8 +9,8 @@ const ButtonLogOut = () => {
   const navigation = useNavigation();
   return (
     <TouchableOpacity
-      onPress={() => {
-        dispatch(logoutUserThunk());
+      onPress={async () => {
+        await dispatch(logoutUserThunk());
         navigation.navigate("Login");
       }}
     >
