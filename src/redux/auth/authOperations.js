@@ -8,7 +8,6 @@ import {
 import { auth, db, storage } from "../config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { addDoc, collection } from "firebase/firestore";
-import { ToastAndroid } from "react-native";
 import { ref, deleteObject } from "firebase/storage";
 import { uriToBlob } from "../../helpers/index";
 import {
@@ -60,14 +59,6 @@ export const registerUserThunk = createAsyncThunk(
       console.log("Користувач успішно доданий до Firestore з ID: ", docRef.id);
       return { displayName, email, photoURL };
     } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        ToastAndroid.show(
-          "Користувач з такою електронною адресою вже існує",
-          2500
-        );
-      } else if (error.code === "auth/invalid-email") {
-        ToastAndroid.show("Ця електронна адреса недійсна!", 2500);
-      }
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -95,14 +86,6 @@ export const loginUserThunk = createAsyncThunk(
       const photoURL = profilePicture;
       return { displayName, email, photoURL };
     } catch (error) {
-      if (error.code === "auth/wrong-password") {
-        ToastAndroid.show("Невірний пароль!", 2500);
-      } else if (error.code === "auth/user-not-found") {
-        ToastAndroid.show(
-          "Користувача з вказаною електронною адресою не існує!",
-          2500
-        );
-      }
       return thunkAPI.rejectWithValue(error.message);
     }
   }

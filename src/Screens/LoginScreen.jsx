@@ -11,7 +11,6 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
-  ToastAndroid,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { loginUserThunk } from "../redux/auth/authOperations";
@@ -35,10 +34,6 @@ const LoginScreen = () => {
   const navigation = useNavigation();
 
   const handleInputChange = (inputName, text) => {
-    if (inputName === "password") {
-      text = text.toLowerCase();
-    }
-
     setState((prevValues) => ({
       ...prevValues,
       [inputName]: text,
@@ -65,7 +60,6 @@ const LoginScreen = () => {
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email)) {
       errors.email = "Введіть дійсну електронну пошту";
     } else {
@@ -77,7 +71,6 @@ const LoginScreen = () => {
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
-      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else {
       try {
         await signInWithEmailAndPassword(auth, state.email, state.password);
@@ -115,7 +108,10 @@ const LoginScreen = () => {
             text: "OK",
             onPress: () => {
               clearLoginForm();
-              navigation.navigate("BottomNavigator");
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "BottomNavigator" }],
+              });
             },
           },
         ]

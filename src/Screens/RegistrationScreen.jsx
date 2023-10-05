@@ -10,7 +10,6 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
-  ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
@@ -74,18 +73,13 @@ const RegistrationScreen = () => {
 
   const validateForm = async () => {
     const errors = {};
-    if (!state.photoURL) {
-      errors.photo = "Фотографія обов'язкова";
-    }
 
     if (!state.displayName) {
       errors.displayName = "Логін обов'язковий";
-      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     }
 
     if (!state.email) {
       errors.email = "Електронна пошта обов'язкова";
-      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (!isValidEmail(state.email) || state.email.length < 5) {
       errors.email = "Введіть дійсну електронну пошту";
     } else {
@@ -97,7 +91,6 @@ const RegistrationScreen = () => {
 
     if (!state.password) {
       errors.password = "Пароль обов'язковий";
-      ToastAndroid.show("Усі поля повинні бути заповнені", 2500);
     } else if (state.password.length < 6) {
       errors.password = "Довжина паролю повинна бути не менше 6 символів!";
     }
@@ -133,8 +126,9 @@ const RegistrationScreen = () => {
             text: "OK",
             onPress: () => {
               clearRegistrationForm();
-              navigation.navigate("BottomNavigator", {
-                screen: "Posts",
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "BottomNavigator" }],
               });
             },
           },
