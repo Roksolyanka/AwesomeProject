@@ -8,7 +8,6 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
-  Alert,
   ImageBackground,
 } from "react-native";
 import {
@@ -99,7 +98,7 @@ const CreatePostsScreen = () => {
     if (isCameraActive && cameraRef) {
       const { uri } = await cameraRef.takePictureAsync();
       await MediaLibrary.createAssetAsync(uri);
-       const optimizedImageUrl = await imageOptimization(uri);
+      const optimizedImageUrl = await imageOptimization(uri);
       setState((prevState) => ({ ...prevState, imageURL: optimizedImageUrl }));
       getCurrentLocation();
     }
@@ -155,7 +154,8 @@ const CreatePostsScreen = () => {
     setState(initialState);
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
+    setWaitingProcess(true);
     if (validateForm()) {
       const newPublication = {
         name: state.name,
@@ -163,10 +163,10 @@ const CreatePostsScreen = () => {
         geolocation: state.geolocation,
         imageURL: state.imageURL,
       };
-      dispatch(createPostThunk(newPublication));
+      await dispatch(createPostThunk(newPublication));
       navigation.navigate("Posts");
-      Alert.alert("Публікація успішно створена!");
     }
+    setWaitingProcess(false);
   };
 
   return (
@@ -285,6 +285,12 @@ const CreatePostsScreen = () => {
               Опублікувати
             </Text>
           </TouchableOpacity>
+          <Spinner
+            visible={waitingProcess}
+            textContent={"Очікування..."}
+            textStyle={styles.spinnerTextStyle}
+            overlayColor="linear-gradient(rgba(46, 47, 66, 0.6), rgba(46, 47, 66, 0.6))"
+          />
         </View>
         <TouchableOpacity
           onPress={() => {

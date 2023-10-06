@@ -75,8 +75,8 @@ const ProfileScreen = () => {
           <View style={styles.profileContainer}>
             <UserPhoto />
             <TouchableOpacity
-              onPress={async () => {
-                await dispatch(logoutUserThunk());
+              onPress={() => {
+                dispatch(logoutUserThunk());
                 navigation.navigate("Login");
               }}
             >
@@ -102,61 +102,45 @@ const ProfileScreen = () => {
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
-                        {item.comments.some(
-                          (commentsItem) => commentsItem.userId === uid
-                        ) ? (
-                          <>
-                            <TouchableOpacity
-                              onPress={() => {
-                                navigation.navigate("Comments", {
-                                  post: item,
-                                });
-                              }}
-                              style={styles.publicationCommentContainer}
-                            >
-                              <Ionicons
-                                name="chatbubble"
-                                size={24}
-                                style={styles.icon}
-                              />
-                              <Text style={styles.commentCount}>
-                                {item.comments.length}
-                              </Text>
-                            </TouchableOpacity>
-                          </>
+                        {item.comments.length > 0 ? (
+                          <TouchableOpacity
+                            onPress={() => {
+                              navigation.navigate("Comments", {
+                                post: item,
+                              });
+                            }}
+                            style={styles.publicationCommentContainer}
+                          >
+                            <Ionicons
+                              name="chatbubble"
+                              size={24}
+                              style={styles.icon}
+                            />
+                            <Text style={styles.count}>
+                              {item.comments.length}
+                            </Text>
+                          </TouchableOpacity>
                         ) : (
-                          <>
-                            <TouchableOpacity
-                              onPress={() => {
-                                navigation.navigate("Comments", {
-                                  post: item,
-                                });
-                              }}
-                              style={styles.publicationCommentContainer}
-                            >
-                              <Ionicons
-                                name="chatbubble-outline"
-                                size={24}
-                                style={[
-                                  styles.icon,
-                                  item.comments.length === 0 && styles.iconGray,
-                                ]}
-                              />
-                              <Text
-                                style={[
-                                  styles.count,
-                                  item.comments.length === 0 &&
-                                    styles.countZero,
-                                ]}
-                              >
-                                {item.comments.length}
-                              </Text>
-                            </TouchableOpacity>
-                          </>
+                          <TouchableOpacity
+                            onPress={() => {
+                              navigation.navigate("Comments", {
+                                post: item,
+                              });
+                            }}
+                            style={styles.publicationCommentContainer}
+                          >
+                            <Ionicons
+                              name="chatbubble-outline"
+                              size={24}
+                              style={styles.iconGray}
+                            />
+                            <Text style={styles.countZero}>
+                              {item.comments.length}
+                            </Text>
+                          </TouchableOpacity>
                         )}
                         {item.liked.some(
-                          (likedItem) =>
-                            likedItem.userId === uid
+                          (likedItem) => likedItem.userId === uid
                         ) ? (
                           <TouchableOpacity
                             onPress={() => deleteLike(item.id, item.likes)}

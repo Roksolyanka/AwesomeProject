@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { registerUserThunk } from "../redux/auth/authOperations";
 import UserPhotoCreate from "../components/UserPhotoCreate";
 import { userVerification } from "../firebase/index";
+import Spinner from "react-native-loading-spinner-overlay";
 
 const initialState = {
   email: "",
@@ -32,6 +33,7 @@ const RegistrationScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState({});
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [waitingProcess, setWaitingProcess] = useState(false);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -110,6 +112,7 @@ const RegistrationScreen = () => {
   };
 
   const handleRegistration = async () => {
+    setWaitingProcess(true);
     if (await validateForm()) {
       const registrationData = {
         displayName: state.displayName,
@@ -118,23 +121,13 @@ const RegistrationScreen = () => {
         photoURL: state.photoURL,
       };
       dispatch(registerUserThunk(registrationData));
-      Alert.alert(
-        "Реєстрація успішна! Облікові дані:",
-        `${state.displayName} + ${state.email} + ${state.password}`,
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              clearRegistrationForm();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "BottomNavigator" }],
-              });
-            },
-          },
-        ]
-      );
+      clearRegistrationForm();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "BottomNavigator" }],
+      });
     }
+    setWaitingProcess(false);
   };
 
   const keyboardHide = () => {
@@ -249,6 +242,12 @@ const RegistrationScreen = () => {
               >
                 <Text style={styles.textInfoLink}>Вже є акаунт? Увійти</Text>
               </TouchableOpacity>
+              <Spinner
+                visible={waitingProcess}
+                textContent={"Очікування..."}
+                textStyle={styles.spinnerTextStyle}
+                overlayColor="linear-gradient(rgba(46, 47, 66, 0.6), rgba(46, 47, 66, 0.6))"
+              />
             </View>
           </View>
         </ImageBackground>

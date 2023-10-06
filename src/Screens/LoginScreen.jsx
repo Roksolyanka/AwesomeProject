@@ -17,6 +17,7 @@ import { loginUserThunk } from "../redux/auth/authOperations";
 import { userVerification } from "../firebase/index";
 import { auth } from "../redux/config";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import Spinner from "react-native-loading-spinner-overlay";
 
 const initialState = {
   email: "",
@@ -30,6 +31,7 @@ const LoginScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState({});
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [waitingProcess, setWaitingProcess] = useState(false);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -94,29 +96,20 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
+    setWaitingProcess(true);
     if (await validateForm()) {
       const loginData = {
         email: state.email,
         password: state.password,
       };
       dispatch(loginUserThunk(loginData));
-      Alert.alert(
-        "Вхід успішний! Облікові дані:",
-        `${state.email} + ${state.password}`,
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              clearLoginForm();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "BottomNavigator" }],
-              });
-            },
-          },
-        ]
-      );
+      clearLoginForm();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "BottomNavigator" }],
+      });
     }
+    setWaitingProcess(false);
   };
 
   const keyboardHide = () => {
@@ -202,6 +195,12 @@ const LoginScreen = () => {
               >
                 <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
+              <Spinner
+                visible={waitingProcess}
+                textContent={"Очікування..."}
+                textStyle={styles.spinnerTextStyle}
+                overlayColor="linear-gradient(rgba(46, 47, 66, 0.6), rgba(46, 47, 66, 0.6))"
+              />
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate("Registration");

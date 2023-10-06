@@ -69,57 +69,34 @@ const PostsScreen = () => {
               )}
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {item.comments.some(
-                  (commentsItem) => commentsItem.userId === uid
-                ) ? (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Comments", {
-                          post: item,
-                        });
-                      }}
-                      style={styles.publicationCommentContainer}
-                    >
-                      <Ionicons
-                        name="chatbubble"
-                        size={24}
-                        style={styles.icon}
-                      />
-                      <Text style={styles.commentCount}>
-                        {item.comments.length}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
+                {item.comments.length > 0 ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("Comments", {
+                        post: item,
+                      });
+                    }}
+                    style={styles.publicationCommentContainer}
+                  >
+                    <Ionicons name="chatbubble" size={24} style={styles.icon} />
+                    <Text style={styles.count}>{item.comments.length}</Text>
+                  </TouchableOpacity>
                 ) : (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Comments", {
-                          post: item,
-                        });
-                      }}
-                      style={styles.publicationCommentContainer}
-                    >
-                      <Ionicons
-                        name="chatbubble-outline"
-                        size={24}
-                        style={[
-                          styles.icon,
-                          item.comments.length === 0 &&
-                            styles.iconWithoutComments,
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.commentCount,
-                          item.comments.length === 0 && styles.commentCountZero,
-                        ]}
-                      >
-                        {item.comments.length}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("Comments", {
+                        post: item,
+                      });
+                    }}
+                    style={styles.publicationCommentContainer}
+                  >
+                    <Ionicons
+                      name="chatbubble-outline"
+                      size={24}
+                      style={styles.iconGray}
+                    />
+                    <Text style={styles.countZero}>{item.comments.length}</Text>
+                  </TouchableOpacity>
                 )}
                 <TouchableOpacity
                   style={styles.publicationLocationContainer}
@@ -219,17 +196,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  commentCount: {
+  count: {
     color: "#212121",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
     fontWeight: "400",
   },
-  iconWithoutComments: {
+  iconGray: {
     color: "#BDBDBD",
   },
-  commentCountZero: {
+  countZero: {
     color: "#BDBDBD",
   },
   icon: {
