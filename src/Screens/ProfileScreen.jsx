@@ -11,9 +11,8 @@ import {
   RefreshControl,
 } from "react-native";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import UserPhoto from "../components/UserPhoto";
-import { logoutUserThunk } from "../redux/auth/authOperations";
 import { useDispatch } from "react-redux";
 import { usePost, useUser } from "../hooks/index.js";
 import {
@@ -23,6 +22,7 @@ import {
 } from "../redux/posts/postOperations";
 import { auth } from "../redux/config";
 import { updatePage } from "../helpers/index";
+import ButtonLogOut from "../components/ButtonLogOut";
 
 const ProfileScreen = () => {
   const [update, setUpdate] = useState(false);
@@ -65,6 +65,12 @@ const ProfileScreen = () => {
 
   const uid = auth.currentUser ? auth.currentUser.uid : null;
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchMyPosts();
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -74,14 +80,9 @@ const ProfileScreen = () => {
         <SafeAreaView style={styles.safeContainer}>
           <View style={styles.profileContainer}>
             <UserPhoto />
-            <TouchableOpacity
-              onPress={() => {
-                dispatch(logoutUserThunk());
-                navigation.navigate("Login");
-              }}
-            >
-              <Feather name="log-out" size={24} style={styles.iconLogOut} />
-            </TouchableOpacity>
+            <View style={styles.containerLogOut}>
+              <ButtonLogOut />
+            </View>
             {user && <Text style={styles.name}>{user.displayName}</Text>}
             <FlatList
               refreshControl={
@@ -102,42 +103,48 @@ const ProfileScreen = () => {
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
                       <View style={styles.publicationIconContainer}>
-                        {item.comments.length > 0 ? (
-                          <TouchableOpacity
-                            onPress={() => {
-                              navigation.navigate("Comments", {
-                                post: item,
-                              });
-                            }}
-                            style={styles.publicationCommentContainer}
-                          >
-                            <Ionicons
-                              name="chatbubble"
-                              size={24}
-                              style={styles.icon}
-                            />
-                            <Text style={styles.count}>
-                              {item.comments.length}
-                            </Text>
-                          </TouchableOpacity>
+                        {item.comments.some(
+                          (commentsItem) => commentsItem.userId === uid
+                        ) ? (
+                          <>
+                            <TouchableOpacity
+                              onPress={() => {
+                                navigation.navigate("Comments", {
+                                  post: item,
+                                });
+                              }}
+                              style={styles.publicationCommentContainer}
+                            >
+                              <Ionicons
+                                name="chatbubble"
+                                size={24}
+                                style={styles.icon}
+                              />
+                              <Text style={styles.count}>
+                                {item.comments.length}
+                              </Text>
+                            </TouchableOpacity>
+                          </>
                         ) : (
-                          <TouchableOpacity
-                            onPress={() => {
-                              navigation.navigate("Comments", {
-                                post: item,
-                              });
-                            }}
-                            style={styles.publicationCommentContainer}
-                          >
-                            <Ionicons
-                              name="chatbubble-outline"
-                              size={24}
-                              style={styles.iconGray}
-                            />
-                            <Text style={styles.countZero}>
-                              {item.comments.length}
-                            </Text>
-                          </TouchableOpacity>
+                          <>
+                            <TouchableOpacity
+                              onPress={() => {
+                                navigation.navigate("Comments", {
+                                  post: item,
+                                });
+                              }}
+                              style={styles.publicationCommentContainer}
+                            >
+                              <Ionicons
+                                name="chatbubble-outline"
+                                size={24}
+                                style={styles.iconGray}
+                              />
+                              <Text style={styles.countZero}>
+                                {item.comments.length}
+                              </Text>
+                            </TouchableOpacity>
+                          </>
                         )}
                         {item.liked.some(
                           (likedItem) => likedItem.userId === uid
@@ -219,10 +226,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
-  iconLogOut: {
+  containerLogOut: {
     alignSelf: "flex-end",
     top: -102,
-    color: "#BDBDBD",
   },
   name: {
     color: "#212121",

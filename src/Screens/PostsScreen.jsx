@@ -1,5 +1,5 @@
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -38,6 +38,12 @@ const PostsScreen = () => {
 
   const uid = auth.currentUser ? auth.currentUser.uid : null;
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchAllPosts();
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.userContainer}>
@@ -69,34 +75,46 @@ const PostsScreen = () => {
               )}
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {item.comments.length > 0 ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("Comments", {
-                        post: item,
-                      });
-                    }}
-                    style={styles.publicationCommentContainer}
-                  >
-                    <Ionicons name="chatbubble" size={24} style={styles.icon} />
-                    <Text style={styles.count}>{item.comments.length}</Text>
-                  </TouchableOpacity>
+                {item.comments.some(
+                  (commentsItem) => commentsItem.userId === uid
+                ) ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("Comments", {
+                          post: item,
+                        });
+                      }}
+                      style={styles.publicationCommentContainer}
+                    >
+                      <Ionicons
+                        name="chatbubble"
+                        size={24}
+                        style={styles.icon}
+                      />
+                      <Text style={styles.count}>{item.comments.length}</Text>
+                    </TouchableOpacity>
+                  </>
                 ) : (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("Comments", {
-                        post: item,
-                      });
-                    }}
-                    style={styles.publicationCommentContainer}
-                  >
-                    <Ionicons
-                      name="chatbubble-outline"
-                      size={24}
-                      style={styles.iconGray}
-                    />
-                    <Text style={styles.countZero}>{item.comments.length}</Text>
-                  </TouchableOpacity>
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("Comments", {
+                          post: item,
+                        });
+                      }}
+                      style={styles.publicationCommentContainer}
+                    >
+                      <Ionicons
+                        name="chatbubble-outline"
+                        size={24}
+                        style={styles.iconGray}
+                      />
+                      <Text style={styles.countZero}>
+                        {item.comments.length}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
                 )}
                 <TouchableOpacity
                   style={styles.publicationLocationContainer}

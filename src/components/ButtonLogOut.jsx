@@ -11,7 +11,10 @@ const ButtonLogOut = () => {
     <TouchableOpacity
       onPress={async () => {
         await dispatch(logoutUserThunk());
-        navigation.navigate("Login");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
       }}
     >
       <Feather name="log-out" size={24} style={styles.iconLogOut} />
