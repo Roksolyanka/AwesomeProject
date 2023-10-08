@@ -27,7 +27,7 @@ const authInitialState = {
 export const updateUser = (user) => ({
   type: "auth/updateUser",
   payload: {
-    displayName: user ? user.login : null,
+    displayName: user ? user.displayName : null,
     email: user ? user.email : null,
     photoURL: user ? user.photoURL : "",
   },

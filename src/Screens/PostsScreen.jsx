@@ -1,4 +1,4 @@
-import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
@@ -12,8 +12,13 @@ import {
 } from "react-native";
 import { usePost, useUser } from "../hooks/index";
 import { useDispatch } from "react-redux";
-import { getAllPostsThunk } from "../redux/posts/postOperations";
+import {
+  addLikeThunk,
+  deleteLikeThunk,
+  getAllPostsThunk,
+} from "../redux/posts/postOperations";
 import { auth } from "../redux/config";
+import { updatePage } from "../helpers/index";
 
 const PostsScreen = () => {
   const [update, setUpdate] = useState(false);
@@ -34,6 +39,24 @@ const PostsScreen = () => {
       console.error("Error fetching posts:", error);
     }
     setUpdate(false);
+  };
+
+  const addLike = async (id, likes) => {
+    const value = (likes += 1);
+    dispatch(addLikeThunk({ id, value }));
+
+    updatePage(id, () => {
+      dispatch(getAllPostsThunk());
+    });
+  };
+
+  const deleteLike = async (id, likes) => {
+    const value = (likes -= 1);
+    dispatch(deleteLikeThunk({ id, value }));
+
+    updatePage(id, () => {
+      dispatch(getAllPostsThunk());
+    });
   };
 
   const uid = auth.currentUser ? auth.currentUser.uid : null;
@@ -75,47 +98,72 @@ const PostsScreen = () => {
               )}
               <Text style={styles.publicationName}>{item.name}</Text>
               <View style={styles.publicationDataContainer}>
-                {item.comments.some(
-                  (commentsItem) => commentsItem.userId === uid
-                ) ? (
-                  <>
+                <View style={styles.publicationIconContainer}>
+                  {item.comments.some(
+                    (commentsItem) => commentsItem.userId === uid
+                  ) ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("Comments", {
+                            post: item,
+                          });
+                        }}
+                        style={styles.publicationCommentContainer}
+                      >
+                        <Ionicons
+                          name="chatbubble"
+                          size={24}
+                          style={styles.icon}
+                        />
+                        <Text style={styles.count}>{item.comments.length}</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("Comments", {
+                            post: item,
+                          });
+                        }}
+                        style={styles.publicationCommentContainer}
+                      >
+                        <Ionicons
+                          name="chatbubble-outline"
+                          size={24}
+                          style={styles.iconGray}
+                        />
+                        <Text style={styles.countZero}>
+                          {item.comments.length}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                  {item.liked.some((likedItem) => likedItem.userId === uid) ? (
                     <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Comments", {
-                          post: item,
-                        });
-                      }}
-                      style={styles.publicationCommentContainer}
+                      onPress={() => deleteLike(item.id, item.likes)}
+                      style={styles.publicationLikeContainer}
                     >
-                      <Ionicons
-                        name="chatbubble"
-                        size={24}
-                        style={styles.icon}
-                      />
-                      <Text style={styles.count}>{item.comments.length}</Text>
+                      <Feather name="thumbs-up" size={24} style={styles.icon} />
+                      <Text style={styles.count}>{item.likes}</Text>
                     </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("Comments", {
-                          post: item,
-                        });
-                      }}
-                      style={styles.publicationCommentContainer}
+                      onPress={() => addLike(item.id, item.likes)}
+                      style={styles.publicationLikeContainer}
                     >
-                      <Ionicons
-                        name="chatbubble-outline"
+                      <Feather
+                        name="thumbs-up"
                         size={24}
                         style={styles.iconGray}
                       />
-                      <Text style={styles.countZero}>
-                        {item.comments.length}
+                      <Text style={[styles.count, styles.countZero]}>
+                        {item.likes}
                       </Text>
                     </TouchableOpacity>
-                  </>
-                )}
+                  )}
+                </View>
                 <TouchableOpacity
                   style={styles.publicationLocationContainer}
                   onPress={() => {
@@ -205,7 +253,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 45,
+    gap: 35,
+  },
+  publicationIconContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 24,
   },
   publicationCommentContainer: {
     display: "flex",
@@ -227,8 +281,22 @@ const styles = StyleSheet.create({
   countZero: {
     color: "#BDBDBD",
   },
+  publicationLikeContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 6,
+    alignItems: "center",
+  },
   icon: {
     color: "#FF6C00",
+  },
+  likeCount: {
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
   },
   publicationLocationContainer: {
     display: "flex",

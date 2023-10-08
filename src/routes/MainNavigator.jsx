@@ -10,16 +10,22 @@ import MapScreen from "../Screens/MapScreen";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../redux/auth/authSlice";
 import { authStateChanged } from "../redux/auth/authOperations";
+import { useNavigation } from "@react-navigation/native";
 
 const Stack = createStackNavigator();
 
 export default function MainNavigator() {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   useEffect(() => {
     authStateChanged((user) => {
       if (user) {
         dispatch(updateUser(user));
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "BottomNavigator" }],
+        });
       } else {
         dispatch(
           updateUser({
@@ -30,7 +36,7 @@ export default function MainNavigator() {
         );
       }
     });
-  }, [dispatch]);
+  }, [dispatch, navigation]);
 
   return (
     <Stack.Navigator initialRouteName="Login">

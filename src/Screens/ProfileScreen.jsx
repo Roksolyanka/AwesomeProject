@@ -102,7 +102,7 @@ const ProfileScreen = () => {
                     ) : null}
                     <Text style={styles.publicationName}>{item.name}</Text>
                     <View style={styles.publicationDataContainer}>
-                      <View style={styles.publicationIconContainer}>
+                     <View style={styles.publicationIconContainer}>
                         {item.comments.some(
                           (commentsItem) => commentsItem.userId === uid
                         ) ? (
@@ -112,7 +112,7 @@ const ProfileScreen = () => {
                                 navigation.navigate("Comments", {
                                   post: item,
                                 });
-                              }}
+                               }}
                               style={styles.publicationCommentContainer}
                             >
                               <Ionicons
@@ -268,6 +268,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 35,
   },
   publicationIconContainer: {
     display: "flex",
